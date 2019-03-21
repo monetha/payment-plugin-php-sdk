@@ -175,23 +175,13 @@ class GatewayService
 
     public function createClient($clientBody)
     {
-        $clientId = 0;
-        if(isset($clientBody['contact_phone_number']) && $clientBody['contact_phone_number'])
-        {
-            $apiUrl = $this->getApiUrl();
+        $apiUrl = $this->getApiUrl();
 
-            $payload = new CreateClientPayload($clientBody);
-            $request = new CreateClient($payload, $this->mthApiKey, $apiUrl);
-            $guzzleResponse = $request->send();
+        $payload = new CreateClientPayload($clientBody);
+        $request = new CreateClient($payload, $this->mthApiKey, $apiUrl);
+        $response = $request->send();
 
-            $apiUrl = $apiUrl . 'v1/clients';
-            $clientResponse = HttpService::callApi($apiUrl, 'POST', $clientBody, ["Authorization: Bearer " . $this->mthApiKey]);
-            if(isset($clientResponse->client_id)) {
-                $clientId = $clientResponse->client_id;
-            } else {
-                return $clientResponse;
-            }
-        }
+        $clientId = $response->getClientId();
 
         return $clientId;
     }

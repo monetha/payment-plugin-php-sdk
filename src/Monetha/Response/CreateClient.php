@@ -9,7 +9,38 @@
 namespace Monetha\Response;
 
 
+use Monetha\Response\Exception\ClientIdNotFoundException;
+
 class CreateClient extends AbstractResponse
 {
+    /**
+     * @var int
+     */
+    private $clientId;
 
+    /**
+     * CreateClient constructor.
+     * @param array $dataResponseItem
+     * @throws ClientIdNotFoundException
+     */
+    public function __construct(array $dataResponseItem)
+    {
+        parent::__construct($dataResponseItem);
+
+        if (empty($dataResponseItem['client_id'])) {
+            throw new ClientIdNotFoundException(
+                'Client id not found, response: ' . \GuzzleHttp\json_encode($dataResponseItem)
+            );
+        }
+
+        $this->clientId = $dataResponseItem['client_id'];
+    }
+
+    /**
+     * @return int
+     */
+    public function getClientId()
+    {
+        return $this->clientId;
+    }
 }

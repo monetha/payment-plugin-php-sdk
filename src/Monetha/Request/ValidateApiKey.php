@@ -16,6 +16,12 @@ class ValidateApiKey extends AbstractRequest
     protected $method = 'GET';
 
     // TODO: "L" from SOLID principles
+
+    /**
+     * @return array|ValidateApiKeyResponse
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Monetha\Response\Exception\IntegrationSecretNotFoundException
+     */
     public function send()
     {
         $responseArray = parent::send();
