@@ -8,8 +8,20 @@
 
 namespace Monetha\Request;
 
+use Monetha\Response\ValidateApiKey as ValidateApiKeyResponse;
+
 
 class ValidateApiKey extends AbstractRequest
 {
     protected $method = 'GET';
+
+    // TODO: "L" from SOLID principles
+    public function send()
+    {
+        $responseArray = parent::send();
+
+        $response = new ValidateApiKeyResponse($responseArray);
+
+        return $response;
+    }
 }

@@ -9,7 +9,38 @@
 namespace Monetha\Response;
 
 
+use Monetha\Response\Exception\IntegrationSecretNotFoundException;
+
 class ValidateApiKey extends AbstractResponse
 {
+    /**
+     * @var string
+     */
+    private $integrationSecret;
 
+    /**
+     * ValidateApiKey constructor.
+     * @param array $dataResponseItem
+     * @throws IntegrationSecretNotFoundException
+     */
+    public function __construct(array $dataResponseItem)
+    {
+        parent::__construct($dataResponseItem);
+
+        if (empty($dataResponseItem['integration_secret'])) {
+            throw new IntegrationSecretNotFoundException(
+                'Integration secret not found, response: ' . \GuzzleHttp\json_encode($dataResponseItem)
+            );
+        }
+
+        $this->integrationSecret = $dataResponseItem['integration_secret'];
+    }
+
+    /**
+     * @return string
+     */
+    public function getIntegrationSecret()
+    {
+        return $this->integrationSecret;
+    }
 }

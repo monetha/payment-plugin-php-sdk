@@ -93,18 +93,16 @@ class GatewayService
             return false;
         }
 
-        $apiUrl = $apiUrl . 'v1/merchants/' . $merchantId .'/secret';
+        $uri = 'v1/merchants/' . $merchantId .'/secret';
 
         $payload = new ValidateApiKeyPayload();
-        $request = new ValidateApiKey($payload, $this->mthApiKey, $apiUrl);
-        $guzzleResponse = $request->send();
+        $request = new ValidateApiKey($payload, $this->mthApiKey, $apiUrl, $uri);
 
-        $response = HttpService::callApi($apiUrl, 'GET', null, ["Authorization: Bearer " . $this->mthApiKey]);
-        if(isset($response->integration_secret))
-        {
-            return $response->integration_secret == $this->merchantSecret;
-        }
-        return false;
+        // TODO: try/catch
+        $validateResponse = $request->send();
+        $integrationSecret = $validateResponse->getIntegrationSecret();
+
+        return $integrationSecret == $this->merchantSecret;
     }
 
     public function configurationIsValid()
