@@ -11,6 +11,7 @@ namespace Monetha;
 class Test
 {
     public static function run() {
+        // hello world 2
         var_dump($_REQUEST);exit;
     }
 }
