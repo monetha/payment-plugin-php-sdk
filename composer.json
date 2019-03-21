@@ -1,0 +1,10 @@
+{
+    "name": "hitrov/monethagateway",
+    "authors": [
+        {
+            "name": "Alexander Hitrov",
+            "email": "alexander.hitrov@monetha.io"
+        }
+    ],
+    "require": {}
+}
