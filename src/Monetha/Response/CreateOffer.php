@@ -9,7 +9,38 @@
 namespace Monetha\Response;
 
 
+use Monetha\Response\Exception\TokenNotFoundException;
+
 class CreateOffer extends AbstractResponse
 {
+    /**
+     * @var string
+     */
+    private $token;
 
+    /**
+     * CreateOffer constructor.
+     * @param array $dataResponseItem
+     * @throws TokenNotFoundException
+     */
+    public function __construct(array $dataResponseItem)
+    {
+        parent::__construct($dataResponseItem);
+
+        if (empty($dataResponseItem['token'])) {
+            throw new TokenNotFoundException(
+                'Token not found, response: ' . \GuzzleHttp\json_encode($dataResponseItem)
+            );
+        }
+
+        $this->token = $dataResponseItem['token'];
+    }
+
+    /**
+     * @return string
+     */
+    public function getToken()
+    {
+        return $this->token;
+    }
 }

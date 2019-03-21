@@ -192,11 +192,9 @@ class GatewayService
 
         $payload = new CreateOfferPayload($offerBody);
         $request = new CreateOffer($payload, $this->mthApiKey, $apiUrl);
-        $guzzleResponse = $request->send();
+        $response = $request->send();
 
-        $apiUrl = $apiUrl . 'v1/merchants/offer_auth';
-
-        return HttpService::callApi($apiUrl, 'POST', $offerBody, ["Authorization: Bearer " . $this->mthApiKey]);
+        return $response->getToken();
     }
 
     public function executeOffer($token)
