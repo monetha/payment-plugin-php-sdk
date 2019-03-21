@@ -11,5 +11,5 @@ namespace Monetha\Request;
 
 class CreateClient extends AbstractRequest
 {
-
+    protected $uri = 'v1/clients';
 }

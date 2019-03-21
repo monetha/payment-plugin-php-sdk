@@ -22,11 +22,6 @@ abstract class AbstractRequest
     /**
      * @var string
      */
-    private $apiUrl;
-
-    /**
-     * @var string
-     */
     private $apiUrlPrefix;
 
     /**
@@ -37,7 +32,7 @@ abstract class AbstractRequest
     /**
      * @var string
      */
-    private $uri;
+    protected $uri;
 
     /**
      * @var string
@@ -50,11 +45,16 @@ abstract class AbstractRequest
     private $client;
 
     /**
+     * @var string
+     */
+    protected $method = 'POST';
+
+    /**
      * AbstractRequest constructor.
      * @param AbstractPayload $payload
-     * @param $token
-     * @param $apiUrlPrefix
-     * @param null $uri
+     * @param string $token
+     * @param string $apiUrlPrefix
+     * @param string|null $uri
      */
     public function __construct(AbstractPayload $payload, $token, $apiUrlPrefix, $uri = null)
     {
@@ -64,26 +64,25 @@ abstract class AbstractRequest
 
         $this->client = new Client(
             [
-                'base_uri' => sprintf('%s://%s:%s', $scheme, $host, $port),
+                'base_uri' => $apiUrlPrefix,
                 'timeout'  => 30,
                 'headers'  => [
                     'Content-Type' => 'application/json',
+                    'Authorization' => 'Bearer ' . $token,
                 ],
             ]
         );
 
-        if (is_null($uri)) {
-            return;
+        if (!$this->uri) {
+            $this->uri = $uri;
         }
-
-        $this->uri = $uri;
     }
 
     /**
      * @return array
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    protected function send()
+    public function send()
     {
         $responseArray = $this->getResponse($this->uri, $this->payload);
 
@@ -137,10 +136,9 @@ abstract class AbstractRequest
 
     /**
      * @param string $uri
-     * @param string $method
      * @return Request
      */
-    private function buildRequest($uri, $method = 'POST') {
-        return new Request($method, $uri);
+    private function buildRequest($uri) {
+        return new Request($this->method, $uri);
     }
 }

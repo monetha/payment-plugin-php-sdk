@@ -11,5 +11,5 @@ namespace Monetha\Request;
 
 class ValidateApiKey extends AbstractRequest
 {
-
+    protected $method = 'GET';
 }

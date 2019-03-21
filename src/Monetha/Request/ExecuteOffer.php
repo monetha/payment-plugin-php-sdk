@@ -11,5 +11,5 @@ namespace Monetha\Request;
 
 class ExecuteOffer extends AbstractRequest
 {
-
+    protected $uri = 'v1/deals/execute';
 }

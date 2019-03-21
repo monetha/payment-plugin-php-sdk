@@ -7,6 +7,16 @@ use Monetha\Constants\ApiType;
 use Monetha\Constants\Resource;
 use Monetha\Constants\EventType;
 use Monetha\Helpers\JWT;
+use Monetha\Payload\CancelOrder as CancelOrderPayload;
+use Monetha\Payload\CreateClient as CreateClientPayload;
+use Monetha\Payload\CreateOffer as CreateOfferPayload;
+use Monetha\Payload\ExecuteOffer as ExecuteOfferPayload;
+use Monetha\Payload\ValidateApiKey as ValidateApiKeyPayload;
+use Monetha\Request\CancelOrder;
+use Monetha\Request\CreateClient;
+use Monetha\Request\CreateOffer;
+use Monetha\Request\ExecuteOffer;
+use Monetha\Request\ValidateApiKey;
 
 class GatewayService
 {
@@ -85,6 +95,10 @@ class GatewayService
 
         $apiUrl = $apiUrl . 'v1/merchants/' . $merchantId .'/secret';
 
+        $payload = new ValidateApiKeyPayload();
+        $request = new ValidateApiKey($payload, $this->mthApiKey, $apiUrl);
+        $guzzleResponse = $request->send();
+
         $response = HttpService::callApi($apiUrl, 'GET', null, ["Authorization: Bearer " . $this->mthApiKey]);
         if(isset($response->integration_secret))
         {
@@ -149,8 +163,15 @@ class GatewayService
     public function cancelExternalOrder($orderId)
     {
         $apiUrl = $this->getApiUrl();
-        $apiUrl = $apiUrl . 'v1/orders/' . $orderId .'/cancel';
+        $uri = 'v1/orders/' . $orderId .'/cancel';
+
         $body = ['cancel_reason'=> 'Order cancelled from shop'];
+
+        $payload = new CancelOrderPayload($body);
+        $request = new CancelOrder($payload, $this->mthApiKey, $apiUrl, $uri);
+        $guzzleResponse = $request->send();
+
+        $apiUrl = $apiUrl . $uri;
         return HttpService::callApi($apiUrl, 'POST', $body, ["Authorization: Bearer " . $this->mthApiKey]);
     }
 
@@ -160,8 +181,12 @@ class GatewayService
         if(isset($clientBody['contact_phone_number']) && $clientBody['contact_phone_number'])
         {
             $apiUrl = $this->getApiUrl();
-            $apiUrl = $apiUrl . 'v1/clients';
 
+            $payload = new CreateClientPayload($clientBody);
+            $request = new CreateClient($payload, $this->mthApiKey, $apiUrl);
+            $guzzleResponse = $request->send();
+
+            $apiUrl = $apiUrl . 'v1/clients';
             $clientResponse = HttpService::callApi($apiUrl, 'POST', $clientBody, ["Authorization: Bearer " . $this->mthApiKey]);
             if(isset($clientResponse->client_id)) {
                 $clientId = $clientResponse->client_id;
@@ -176,6 +201,11 @@ class GatewayService
     public function createOffer($offerBody)
     {
         $apiUrl = $this->getApiUrl();
+
+        $payload = new CreateOfferPayload($offerBody);
+        $request = new CreateOffer($payload, $this->mthApiKey, $apiUrl);
+        $guzzleResponse = $request->send();
+
         $apiUrl = $apiUrl . 'v1/merchants/offer_auth';
 
         return HttpService::callApi($apiUrl, 'POST', $offerBody, ["Authorization: Bearer " . $this->mthApiKey]);
@@ -184,9 +214,15 @@ class GatewayService
     public function executeOffer($token)
     {
         $apiUrl = $this->getApiUrl();
+        $body = ["token" => $token];
+
+        $payload = new ExecuteOfferPayload($body);
+        $request = new ExecuteOffer($payload, $this->mthApiKey, $apiUrl);
+        $guzzleResponse = $request->send();
+
         $apiUrl = $apiUrl . 'v1/deals/execute';
 
-        return HttpService::callApi($apiUrl, 'POST', ["token" => $token], []);
+        return HttpService::callApi($apiUrl, 'POST', $body, []);
     }
 
     public function processAction($order, $data)

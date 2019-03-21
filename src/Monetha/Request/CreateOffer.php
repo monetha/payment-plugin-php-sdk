@@ -11,5 +11,5 @@ namespace Monetha\Request;
 
 class CreateOffer extends AbstractRequest
 {
-
+    protected $uri = 'v1/merchants/offer_auth';
 }
