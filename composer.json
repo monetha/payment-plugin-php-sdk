@@ -6,7 +6,9 @@
             "email": "alexander.hitrov@monetha.io"
         }
     ],
-    "require": {},
+    "require": {
+        "guzzlehttp/guzzle": "^6.3"
+    },
     "version": "1.0.0",
     "autoload": {
         "psr-4": {"Monetha\\": "src/Monetha/"}
