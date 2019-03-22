@@ -2,11 +2,12 @@
 
 namespace Monetha\Services;
 
+use Monetha\Adapter\ClientAdapterInterface;
+use Monetha\Adapter\OrderAdapterInterface;
 use Monetha\Constants\ApiType;
 use Monetha\Constants\Resource;
 use Monetha\Constants\EventType;
 use Monetha\Helpers\JWT;
-use Monetha\Adapter\OrderAdapter;
 use Monetha\Payload\CancelOrder as CancelOrderPayload;
 use Monetha\Payload\CreateClient as CreateClientPayload;
 use Monetha\Payload\CreateOffer as CreateOfferPayload;
@@ -33,10 +34,10 @@ class GatewayService
     }
 
     /**
-     * @param OrderAdapter $orderAdapter
+     * @param OrderAdapterInterface $orderAdapter
      * @return array
      */
-    public function prepareOfferBody(OrderAdapter $orderAdapter)
+    public function prepareOfferBody(OrderAdapterInterface $orderAdapter)
     {
         $orderId = $orderAdapter->getCartId();
         $items = [];
@@ -205,12 +206,22 @@ class GatewayService
     }
 
     /**
-     * @param $deal
+     * @param OrderAdapterInterface $orderAdapter
+     * @param ClientAdapterInterface $clientAdapter
      * @return CreateOfferResponse
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function createOffer($deal)
+    public function createOffer(OrderAdapterInterface $orderAdapter, ClientAdapterInterface $clientAdapter)
     {
+        $deal = $this->prepareOfferBody($orderAdapter);
+
+        $clientResponse =  $this->createClient($clientAdapter);
+        $clientId = $clientResponse->getClientId();
+
+        // TODO: catch exceptions
+
+        $deal['deal']['client_id'] = $clientId;
+
         $apiUrl = $this->getApiUrl();
 
         $payload = new CreateOfferPayload($deal);
@@ -223,12 +234,17 @@ class GatewayService
     }
 
     /**
-     * @param CreateOfferResponse $offerResponse
+     * @param OrderAdapterInterface $orderAdapter
+     * @param ClientAdapterInterface $clientAdapter
      * @return \Monetha\Response\ExecuteOffer
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function executeOffer(CreateOfferResponse $offerResponse)
+    public function executeOffer(OrderAdapterInterface $orderAdapter, ClientAdapterInterface $clientAdapter)
     {
+        $offerResponse = $this->createOffer($orderAdapter, $clientAdapter);
+
+        // TODO: catch exceptions
+
         $apiUrl = $this->getApiUrl();
         $body = ["token" => $offerResponse->getToken()];
 

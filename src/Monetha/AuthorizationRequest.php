@@ -2,7 +2,8 @@
 
 namespace Monetha;
 
-use Monetha\Adapter\OrderAdapter;
+use Monetha\Adapter\ClientAdapterInterface;
+use Monetha\Adapter\OrderAdapterInterface;
 use Monetha\Services\GatewayService;
 
 class AuthorizationRequest
@@ -30,8 +31,8 @@ class AuthorizationRequest
     }
 
     /**
-     * @param OrderAdapter $orderAdapter
-     * @param array $client
+     * @param OrderAdapterInterface $orderAdapter
+     * @param ClientAdapterInterface $clientAdapter
      * @return array
      * @throws Response\Exception\IntegrationSecretNotFoundException
      * @throws Response\Exception\ClientIdNotFoundException
@@ -41,24 +42,11 @@ class AuthorizationRequest
      * @throws Response\Exception\TokenNotFoundException
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getPaymentUrl(OrderAdapter $orderAdapter, array $client)
+    public function getPaymentUrl(OrderAdapterInterface $orderAdapter, ClientAdapterInterface $clientAdapter)
     {
         $gatewayService = new GatewayService($this->merchantSecret, $this->monethaApiKey, $this->testMode);
 
-        $deal = $gatewayService->prepareOfferBody($orderAdapter);
-
-        $clientResponse =  $gatewayService->createClient($client);
-        $clientId = $clientResponse->getClientId();
-
-        // TODO: catch exceptions
-
-        $deal['deal']['client_id'] = $clientId;
-
-        $offerResponse = $gatewayService->createOffer($deal);
-
-        // TODO: catch exceptions
-
-        $executeOfferResponse = $gatewayService->executeOffer($offerResponse);
+        $executeOfferResponse = $gatewayService->executeOffer($orderAdapter, $clientAdapter);
 
         // TODO: catch exceptions
 

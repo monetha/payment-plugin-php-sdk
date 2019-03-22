@@ -3,6 +3,9 @@
 namespace Monetha\Adapter;
 
 interface OrderAdapterInterface {
+    /**
+     * @return Interceptor[]
+     */
     public function getItems();
 
     public function getGrandTotalAmount();
