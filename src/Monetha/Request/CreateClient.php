@@ -14,16 +14,14 @@ class CreateClient extends AbstractRequest
 {
     protected $uri = 'v1/clients';
 
-    // TODO: "L" from SOLID principles
-
     /**
-     * @return array|CreateClientResponse
+     * @return CreateClientResponse
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \Monetha\Response\Exception\ClientIdNotFoundException
      */
     public function send()
     {
-        $responseArray = parent::send();
+        $responseArray = $this->makeRequest();
 
         $response = new CreateClientResponse($responseArray);
 

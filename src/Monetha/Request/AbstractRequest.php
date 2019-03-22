@@ -78,11 +78,17 @@ abstract class AbstractRequest
         }
     }
 
+//    /**
+//     * @return AbstractResponse
+//     * @throws \GuzzleHttp\Exception\GuzzleException
+//     */
+//    abstract public function send();
+
     /**
      * @return array
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function send()
+    protected function makeRequest()
     {
         $responseArray = $this->getResponse($this->uri, $this->payload);
 

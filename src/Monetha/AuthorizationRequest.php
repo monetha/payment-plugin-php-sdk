@@ -6,6 +6,16 @@ use Monetha\Services\GatewayService;
 
 class AuthorizationRequest
 {
+    const EXCEPTION_MESSAGE_MAPPING = [
+        'INVALID_PHONE_NUMBER' => 'Invalid phone number',
+        'AUTH_TOKEN_INVALID' => 'Monetha plugin setup is invalid, please contact merchant.',
+        'INVALID_PHONE_COUNTRY_CODE' => 'This country code is invalid, please input correct country code.',
+        'AMOUNT_TOO_BIG' => 'The value of your cart exceeds the maximum amount. Please remove some of the items from the cart.',
+        'AMOUNT_TOO_SMALL' => 'amount_fiat in body should be greater than or equal to 0.01',
+        'PROCESSOR_MISSING' => 'Can\'t process order, please contact merchant.',
+        'UNSUPPORTED_CURRENCY' => 'Selected currency is not supported by Monetha.',
+    ];
+
     private $merchantSecret = '';
     private $monethaApiKey = '';
     private $testMode = false;
@@ -18,57 +28,36 @@ class AuthorizationRequest
         $this->monethaApiKey = $conf[Config::PARAM_MONETHA_API_KEY];
     }
 
+    /**
+     * @param array $offer
+     * @param array $client
+     * @return array
+     * @throws Response\Exception\ClientIdNotFoundException
+     * @throws Response\Exception\OrderIdNotFoundException
+     * @throws Response\Exception\OrderNotFoundException
+     * @throws Response\Exception\PaymentUrlNotFoundException
+     * @throws Response\Exception\TokenNotFoundException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
     public function getPaymentUrl(array $offer, array $client)
     {
-
         $gatewayService = new GatewayService($this->merchantSecret, $this->monethaApiKey, $this->testMode);
-        $clientId = $gatewayService->createClient($client);
-        if($clientId == 'INVALID_PHONE_NUMBER') {
-            return array('error' => 'INVALID_PHONE_NUMBER', 'message' => 'Invalid phone number');
-        } elseif($clientId == 'AUTH_TOKEN_INVALID') {
-            return array('error' => 'AUTH_TOKEN_INVALID', 'message' => 'Monetha plugin setup is invalid, please contact merchant.');
-        } elseif($clientId == 'INTERNAL_ERROR') {
-            return array('error' => 'INTERNAL_ERROR', 'message' => 'There\'s some internal server error, please contact merchant.');
-        } elseif($clientId == 'INVALID_PHONE_COUNTRY_CODE') {
-            return array('error' => 'INVALID_PHONE_COUNTRY_CODE', 'message' => 'This country code is invalid, please input correct country code.');
-        } else {
-            $offer['deal']['client_id'] = $clientId;
-        }
+        $clientResponse =  $gatewayService->createClient($client);
+        $clientId = $clientResponse->getClientId();
+
+        // TODO: catch exceptions
+
+        $offer['deal']['client_id'] = $clientId;
 
         $offerResponse = $gatewayService->createOffer($offer);
 
-        if($offerResponse == 'AMOUNT_TOO_BIG') {
-            return array('error' => 'AMOUNT_TOO_BIG', 'message' => 'The value of your cart exceeds the maximum amount. Please remove some of the items from the cart.');
-        } elseif($offerResponse == 'AUTH_TOKEN_INVALID') {
-            return array('error' => 'AUTH_TOKEN_INVALID', 'message' => 'Monetha plugin setup is invalid, please contact merchant.');
-        } elseif($offerResponse == 'AMOUNT_TOO_SMALL') {
-            return array('error' => 'AMOUNT_TOO_SMALL', 'message' => 'amount_fiat in body should be greater than or equal to 0.01');
-        } elseif($offerResponse == 'INTERNAL_ERROR') {
-            return array('error' => 'INTERNAL_ERROR', 'message' => 'There\'s some internal server error, please contact merchant.');
-        } elseif($offerResponse == 'PROCESSOR_MISSING') {
-            return array('error' => 'PROCESSOR_MISSING', 'message' => 'Can\'t process order, please contact merchant.');
-        } elseif($offerResponse == 'UNSUPPORTED_CURRENCY') {
-            return array('error' => 'UNSUPPORTED_CURRENCY', 'message' => 'Selected currency is not supported by monetha.');
-        }
+        // TODO: catch exceptions
 
-        $executeOfferResponse = $gatewayService->executeOffer($offerResponse->token);
-        
-        if($executeOfferResponse == 'AMOUNT_TOO_BIG') {
-            return array('error' => 'AMOUNT_TOO_BIG', 'message' => 'The value of your cart exceeds the maximum amount. Please remove some of the items from the cart.');
-        } elseif($executeOfferResponse == 'AUTH_TOKEN_INVALID') {
-            return array('error' => 'AUTH_TOKEN_INVALID', 'message' => 'Monetha plugin setup is invalid, please contact merchant.');
-        } elseif($executeOfferResponse == 'AMOUNT_TOO_SMALL') {
-            return array('error' => 'AMOUNT_TOO_SMALL', 'message' => 'amount_fiat in body should be greater than or equal to 0.01');
-        } elseif($executeOfferResponse == 'INTERNAL_ERROR') {
-            return array('error' => 'INTERNAL_ERROR', 'message' => 'There\'s some internal server error, please contact merchant.');
-        } elseif($executeOfferResponse == 'PROCESSOR_MISSING') {
-            return array('error' => 'PROCESSOR_MISSING', 'message' => 'Can\'t process order, please contact merchant.');
-        } elseif($executeOfferResponse == 'UNSUPPORTED_CURRENCY') {
-            return array('error' => 'UNSUPPORTED_CURRENCY', 'message' => 'Selected currency is not supported by monetha.');
-        }
+        $executeOfferResponse = $gatewayService->executeOffer($offerResponse);
 
-        return array('payment_url' => $executeOfferResponse->order->payment_url, 'monetha_id' => $executeOfferResponse->order->id);
+        // TODO: catch exceptions
+
+        return array('payment_url' => $executeOfferResponse->getPaymentUrl(), 'monetha_id' => $executeOfferResponse->getOrderId());
         //return $executeOfferResponse->order->payment_url;
-    
     }
 }

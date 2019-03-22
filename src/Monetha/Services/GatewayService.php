@@ -17,6 +17,7 @@ use Monetha\Request\CreateClient;
 use Monetha\Request\CreateOffer;
 use Monetha\Request\ExecuteOffer;
 use Monetha\Request\ValidateApiKey;
+use Monetha\Response\CreateOffer as CreateOfferResponse;
 
 class GatewayService
 {
@@ -158,6 +159,10 @@ class GatewayService
         return $apiUrl;
     }
 
+    /**
+     * @param $orderId
+     * @return mixed
+     */
     public function cancelExternalOrder($orderId)
     {
         $apiUrl = $this->getApiUrl();
@@ -167,12 +172,17 @@ class GatewayService
 
         $payload = new CancelOrderPayload($body);
         $request = new CancelOrder($payload, $this->mthApiKey, $apiUrl, $uri);
-        $guzzleResponse = $request->send();
+        $response = $request->send();
 
-        $apiUrl = $apiUrl . $uri;
-        return HttpService::callApi($apiUrl, 'POST', $body, ["Authorization: Bearer " . $this->mthApiKey]);
+        return $response;
     }
 
+    /**
+     * @param $clientBody
+     * @return \Monetha\Response\CreateClient
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Monetha\Response\Exception\ClientIdNotFoundException
+     */
     public function createClient($clientBody)
     {
         $apiUrl = $this->getApiUrl();
@@ -181,11 +191,15 @@ class GatewayService
         $request = new CreateClient($payload, $this->mthApiKey, $apiUrl);
         $response = $request->send();
 
-        $clientId = $response->getClientId();
-
-        return $clientId;
+        return $response;
     }
 
+    /**
+     * @param $offerBody
+     * @return CreateOfferResponse
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Monetha\Response\Exception\TokenNotFoundException
+     */
     public function createOffer($offerBody)
     {
         $apiUrl = $this->getApiUrl();
@@ -194,21 +208,25 @@ class GatewayService
         $request = new CreateOffer($payload, $this->mthApiKey, $apiUrl);
         $response = $request->send();
 
-        return $response->getToken();
+        return $response;
     }
 
-    public function executeOffer($token)
+    /**
+     * @param CreateOfferResponse $offerResponse
+     * @return \Monetha\Response\ExecuteOffer
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Monetha\Response\Exception\OrderNotFoundException
+     */
+    public function executeOffer(CreateOfferResponse $offerResponse)
     {
         $apiUrl = $this->getApiUrl();
-        $body = ["token" => $token];
+        $body = ["token" => $offerResponse->getToken()];
 
         $payload = new ExecuteOfferPayload($body);
         $request = new ExecuteOffer($payload, $this->mthApiKey, $apiUrl);
-        $guzzleResponse = $request->send();
+        $response = $request->send();
 
-        $apiUrl = $apiUrl . 'v1/deals/execute';
-
-        return HttpService::callApi($apiUrl, 'POST', $body, []);
+        return $response;
     }
 
     public function processAction($order, $data)

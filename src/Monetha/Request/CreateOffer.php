@@ -14,16 +14,14 @@ class CreateOffer extends AbstractRequest
 {
     protected $uri = 'v1/merchants/offer_auth';
 
-    // TODO: SOLID's "L"
-
     /**
-     * @return array|CreateOfferResponse
+     * @return CreateOfferResponse
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \Monetha\Response\Exception\TokenNotFoundException
      */
     public function send()
     {
-        $responseArray = parent::send();
+        $responseArray = $this->makeRequest();
 
         $response = new CreateOfferResponse($responseArray);
 
