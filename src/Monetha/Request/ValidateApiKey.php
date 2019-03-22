@@ -8,24 +8,24 @@
 
 namespace Monetha\Request;
 
+use Monetha\Payload\AbstractPayload;
 use Monetha\Response\ValidateApiKey as ValidateApiKeyResponse;
-
 
 class ValidateApiKey extends AbstractRequest
 {
     protected $method = 'GET';
 
     /**
-     * @return ValidateApiKeyResponse
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Monetha\Response\Exception\IntegrationSecretNotFoundException
+     * ValidateApiKey constructor.
+     * @param AbstractPayload $payload
+     * @param $token
+     * @param $apiUrlPrefix
+     * @param null $uri
      */
-    public function send()
+    public function __construct(AbstractPayload $payload, $token, $apiUrlPrefix, $uri = null)
     {
-        $responseArray = $this->makeRequest();
+        $this->response = new ValidateApiKeyResponse();
 
-        $response = new ValidateApiKeyResponse($responseArray);
-
-        return $response;
+        parent::__construct($payload, $token, $apiUrlPrefix, $uri);
     }
 }

@@ -85,6 +85,10 @@ class GatewayService
         return $deal;
     }
 
+    /**
+     * @return bool
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
     public function validateApiKey()
     {
         $apiUrl = $this->getApiUrl();
@@ -99,9 +103,9 @@ class GatewayService
         $payload = new ValidateApiKeyPayload();
         $request = new ValidateApiKey($payload, $this->mthApiKey, $apiUrl, $uri);
 
-        // TODO: try/catch
-        $validateResponse = $request->send();
-        $integrationSecret = $validateResponse->getIntegrationSecret();
+        /** @var \Monetha\Response\ValidateApiKey $response */
+        $response = $request->send();
+        $integrationSecret = $response->getIntegrationSecret();
 
         return $integrationSecret == $this->merchantSecret;
     }
@@ -161,7 +165,8 @@ class GatewayService
 
     /**
      * @param $orderId
-     * @return mixed
+     * @return \Monetha\Response\CancelOrder
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function cancelExternalOrder($orderId)
     {
@@ -172,6 +177,8 @@ class GatewayService
 
         $payload = new CancelOrderPayload($body);
         $request = new CancelOrder($payload, $this->mthApiKey, $apiUrl, $uri);
+
+        /** @var \Monetha\Response\CancelOrder $response */
         $response = $request->send();
 
         return $response;
@@ -181,7 +188,6 @@ class GatewayService
      * @param $clientBody
      * @return \Monetha\Response\CreateClient
      * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Monetha\Response\Exception\ClientIdNotFoundException
      */
     public function createClient($clientBody)
     {
@@ -189,6 +195,8 @@ class GatewayService
 
         $payload = new CreateClientPayload($clientBody);
         $request = new CreateClient($payload, $this->mthApiKey, $apiUrl);
+
+        /** @var \Monetha\Response\CreateClient $response */
         $response = $request->send();
 
         return $response;
@@ -198,7 +206,6 @@ class GatewayService
      * @param $offerBody
      * @return CreateOfferResponse
      * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Monetha\Response\Exception\TokenNotFoundException
      */
     public function createOffer($offerBody)
     {
@@ -206,6 +213,8 @@ class GatewayService
 
         $payload = new CreateOfferPayload($offerBody);
         $request = new CreateOffer($payload, $this->mthApiKey, $apiUrl);
+
+        /** @var \Monetha\Response\CreateOffer $response */
         $response = $request->send();
 
         return $response;
@@ -215,7 +224,6 @@ class GatewayService
      * @param CreateOfferResponse $offerResponse
      * @return \Monetha\Response\ExecuteOffer
      * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Monetha\Response\Exception\OrderNotFoundException
      */
     public function executeOffer(CreateOfferResponse $offerResponse)
     {
@@ -224,6 +232,8 @@ class GatewayService
 
         $payload = new ExecuteOfferPayload($body);
         $request = new ExecuteOffer($payload, $this->mthApiKey, $apiUrl);
+
+        /** @var \Monetha\Response\ExecuteOffer $response */
         $response = $request->send();
 
         return $response;

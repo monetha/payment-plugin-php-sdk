@@ -23,9 +23,9 @@ class ValidateApiKey extends AbstractResponse
      * @param array $dataResponseItem
      * @throws IntegrationSecretNotFoundException
      */
-    public function __construct(array $dataResponseItem)
+    public function setResponseArray(array $dataResponseItem)
     {
-        parent::__construct($dataResponseItem);
+        parent::setResponseArray($dataResponseItem);
 
         if (empty($dataResponseItem['integration_secret'])) {
             throw new IntegrationSecretNotFoundException(

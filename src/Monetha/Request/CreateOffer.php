@@ -8,6 +8,7 @@
 
 namespace Monetha\Request;
 
+use Monetha\Payload\AbstractPayload;
 use Monetha\Response\CreateOffer as CreateOfferResponse;
 
 class CreateOffer extends AbstractRequest
@@ -15,16 +16,16 @@ class CreateOffer extends AbstractRequest
     protected $uri = 'v1/merchants/offer_auth';
 
     /**
-     * @return CreateOfferResponse
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Monetha\Response\Exception\TokenNotFoundException
+     * CreateOffer constructor.
+     * @param AbstractPayload $payload
+     * @param $token
+     * @param $apiUrlPrefix
+     * @param null $uri
      */
-    public function send()
+    public function __construct(AbstractPayload $payload, $token, $apiUrlPrefix, $uri = null)
     {
-        $responseArray = $this->makeRequest();
+        $this->response = new CreateOfferResponse();
 
-        $response = new CreateOfferResponse($responseArray);
-
-        return $response;
+        parent::__construct($payload, $token, $apiUrlPrefix, $uri);
     }
 }

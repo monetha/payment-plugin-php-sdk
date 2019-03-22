@@ -23,9 +23,9 @@ class CreateClient extends AbstractResponse
      * @param array $dataResponseItem
      * @throws ClientIdNotFoundException
      */
-    public function __construct(array $dataResponseItem)
+    public function setResponseArray(array $dataResponseItem)
     {
-        parent::__construct($dataResponseItem);
+        parent::setResponseArray($dataResponseItem);
 
         if (empty($dataResponseItem['client_id'])) {
             throw new ClientIdNotFoundException(

@@ -45,6 +45,11 @@ abstract class AbstractRequest
     private $client;
 
     /**
+     * @var AbstractResponse
+     */
+    protected $response;
+
+    /**
      * @var string
      */
     protected $method = 'POST';
@@ -78,11 +83,18 @@ abstract class AbstractRequest
         }
     }
 
-//    /**
-//     * @return AbstractResponse
-//     * @throws \GuzzleHttp\Exception\GuzzleException
-//     */
-//    abstract public function send();
+    /**
+     * @return AbstractResponse
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    final public function send()
+    {
+        $responseArray = $this->makeRequest();
+
+        $this->response->setResponseArray($responseArray);
+
+        return $this->response;
+    }
 
     /**
      * @return array

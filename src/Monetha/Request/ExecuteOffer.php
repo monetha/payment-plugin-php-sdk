@@ -8,6 +8,7 @@
 
 namespace Monetha\Request;
 
+use Monetha\Payload\AbstractPayload;
 use Monetha\Response\ExecuteOffer as ExecuteOfferResponse;
 
 class ExecuteOffer extends AbstractRequest
@@ -15,16 +16,16 @@ class ExecuteOffer extends AbstractRequest
     protected $uri = 'v1/deals/execute';
 
     /**
-     * @return ExecuteOfferResponse
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Monetha\Response\Exception\OrderNotFoundException
+     * ExecuteOffer constructor.
+     * @param AbstractPayload $payload
+     * @param $token
+     * @param $apiUrlPrefix
+     * @param null $uri
      */
-    public function send()
+    public function __construct(AbstractPayload $payload, $token, $apiUrlPrefix, $uri = null)
     {
-        $responseArray = $this->makeRequest();
+        $this->response = new ExecuteOfferResponse();
 
-        $response = new ExecuteOfferResponse($responseArray);
-
-        return $response;
+        parent::__construct($payload, $token, $apiUrlPrefix, $uri);
     }
 }

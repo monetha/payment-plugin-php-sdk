@@ -23,9 +23,9 @@ class CreateOffer extends AbstractResponse
      * @param array $dataResponseItem
      * @throws TokenNotFoundException
      */
-    public function __construct(array $dataResponseItem)
+    public function setResponseArray(array $dataResponseItem)
     {
-        parent::__construct($dataResponseItem);
+        parent::setResponseArray($dataResponseItem);
 
         if (empty($dataResponseItem['token'])) {
             throw new TokenNotFoundException(

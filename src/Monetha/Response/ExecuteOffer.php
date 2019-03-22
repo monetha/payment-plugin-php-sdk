@@ -25,9 +25,9 @@ class ExecuteOffer extends AbstractResponse
      * @param array $dataResponseItem
      * @throws OrderNotFoundException
      */
-    public function __construct(array $dataResponseItem)
+    public function setResponseArray(array $dataResponseItem)
     {
-        parent::__construct($dataResponseItem);
+        parent::setResponseArray($dataResponseItem);
 
         if (empty($dataResponseItem['order'])) {
             throw new OrderNotFoundException(

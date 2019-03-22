@@ -8,6 +8,7 @@
 
 namespace Monetha\Request;
 
+use Monetha\Payload\AbstractPayload;
 use Monetha\Response\CreateClient as CreateClientResponse;
 
 class CreateClient extends AbstractRequest
@@ -15,16 +16,16 @@ class CreateClient extends AbstractRequest
     protected $uri = 'v1/clients';
 
     /**
-     * @return CreateClientResponse
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Monetha\Response\Exception\ClientIdNotFoundException
+     * CreateClient constructor.
+     * @param AbstractPayload $payload
+     * @param $token
+     * @param $apiUrlPrefix
+     * @param null $uri
      */
-    public function send()
+    public function __construct(AbstractPayload $payload, $token, $apiUrlPrefix, $uri = null)
     {
-        $responseArray = $this->makeRequest();
+        $this->response = new CreateClientResponse();
 
-        $response = new CreateClientResponse($responseArray);
-
-        return $response;
+        parent::__construct($payload, $token, $apiUrlPrefix, $uri);
     }
 }

@@ -21,18 +21,25 @@ abstract class AbstractResponse
     protected $isError = false;
 
     /**
-     * AbstractResponse constructor.
-     *
-     * @param array $dataResponseItem
-     */
-    public function __construct(array $dataResponseItem) {
-        $this->responseArray = $dataResponseItem;
-    }
-
-    /**
      * @return bool
      */
     public function isError() {
         return $this->isError;
+    }
+
+    /**
+     * @param array $responseArray
+     */
+    public function setResponseArray(array $responseArray)
+    {
+        $this->responseArray = $responseArray;
+    }
+
+    /**
+     * @return array
+     */
+    public function getResponseArray()
+    {
+        return $this->responseArray;
     }
 }
