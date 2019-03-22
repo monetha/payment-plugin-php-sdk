@@ -2,11 +2,11 @@
 
 namespace Monetha\Services;
 
-use Monetha\Interceptor;
 use Monetha\Constants\ApiType;
 use Monetha\Constants\Resource;
 use Monetha\Constants\EventType;
 use Monetha\Helpers\JWT;
+use Monetha\Adapter\OrderAdapter;
 use Monetha\Payload\CancelOrder as CancelOrderPayload;
 use Monetha\Payload\CreateClient as CreateClientPayload;
 use Monetha\Payload\CreateOffer as CreateOfferPayload;
@@ -32,16 +32,18 @@ class GatewayService
         $this->testMode = $testMode;
     }
 
-    public function prepareOfferBody($order, $orderId)
+    /**
+     * @param OrderAdapter $orderAdapter
+     * @return array
+     */
+    public function prepareOfferBody(OrderAdapter $orderAdapter)
     {
+        $orderId = $orderAdapter->getCartId();
         $items = [];
-        $cartItems = $order->getItems();
+        $cartItems = $orderAdapter->getItems();
 
         $itemsPrice = 0;
         foreach ($cartItems as $item) {
-            /**
-             * @var $item Interceptor
-             */
             $price = round($item->getPrice(), 2);
             $quantity = $item->getQtyOrdered();
             $li = [
@@ -58,7 +60,7 @@ class GatewayService
 
         $itemsPrice = round($itemsPrice, 2);
 
-        $grandTotal = round($order->getGrandTotalAmount(), 2);
+        $grandTotal = round($orderAdapter->getGrandTotalAmount(), 2);
 
         // Add shipping and taxes
         $shipping = [
@@ -75,11 +77,11 @@ class GatewayService
         $deal = array(
             'deal' => array(
                 'amount_fiat' => round($grandTotal, 2),
-                'currency_fiat' => $order->getCurrencyCode(),
+                'currency_fiat' => $orderAdapter->getCurrencyCode(),
                 'line_items' => $items
             ),
-            'return_url' => $order->getBaseUrl(),
-            'callback_url' => $order->getBaseUrl() . '/modules/monethagateway/webservices/actions.php',
+            'return_url' => $orderAdapter->getBaseUrl(),
+            'callback_url' => $orderAdapter->getBaseUrl() . '/modules/monethagateway/webservices/actions.php',
             'external_order_id' => $orderId . " ",
         );        
         return $deal;
@@ -203,15 +205,15 @@ class GatewayService
     }
 
     /**
-     * @param $offerBody
+     * @param $deal
      * @return CreateOfferResponse
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function createOffer($offerBody)
+    public function createOffer($deal)
     {
         $apiUrl = $this->getApiUrl();
 
-        $payload = new CreateOfferPayload($offerBody);
+        $payload = new CreateOfferPayload($deal);
         $request = new CreateOffer($payload, $this->mthApiKey, $apiUrl);
 
         /** @var \Monetha\Response\CreateOffer $response */

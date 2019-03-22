@@ -1,6 +1,9 @@
 <?php
 
-namespace Monetha;
+namespace Monetha\Adapter;
+
+use Monetha\Adapter\Interceptor;
+use Monetha\Adapter\InterceptorAdapter;
 
 class OrderAdapter implements OrderAdapterInterface {
     /**
@@ -9,7 +12,7 @@ class OrderAdapter implements OrderAdapterInterface {
     private $cart;
 
     /**
-     * @var array
+     * @var Interceptor[]
      */
     private $items = [];
 
@@ -34,6 +37,9 @@ class OrderAdapter implements OrderAdapterInterface {
         }
     }
 
+    /**
+     * @return Interceptor[]
+     */
     public function getItems() {
         return $this->items;
     }
@@ -48,5 +54,13 @@ class OrderAdapter implements OrderAdapterInterface {
 
     public function getBaseUrl() {
         return $this->baseUrl;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCartId()
+    {
+        return $this->cart->id;
     }
 }

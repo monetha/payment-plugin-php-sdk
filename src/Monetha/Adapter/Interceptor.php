@@ -1,6 +1,6 @@
 <?php
 
-namespace Monetha;
+namespace Monetha\Adapter;
 
 interface Interceptor {
     public function getPrice();

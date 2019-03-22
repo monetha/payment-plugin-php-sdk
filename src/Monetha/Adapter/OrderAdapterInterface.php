@@ -1,6 +1,6 @@
 <?php
 
-namespace Monetha;
+namespace Monetha\Adapter;
 
 interface OrderAdapterInterface {
     public function getItems();
@@ -10,4 +10,6 @@ interface OrderAdapterInterface {
     public function getCurrencyCode();
 
     public function getBaseUrl();
+
+    public function getCartId();
 }

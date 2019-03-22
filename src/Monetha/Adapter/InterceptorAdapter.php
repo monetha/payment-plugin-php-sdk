@@ -1,6 +1,8 @@
 <?php
 
-namespace Monetha;
+namespace Monetha\Adapter;
+
+use Monetha\Adapter\Interceptor;
 
 class InterceptorAdapter implements Interceptor {
     /**
