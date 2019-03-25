@@ -2,7 +2,7 @@
 
 namespace Monetha\Adapter;
 
-interface Interceptor {
+interface InterceptorInterface {
     public function getPrice();
 
     public function getName();

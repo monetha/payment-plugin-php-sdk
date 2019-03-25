@@ -4,7 +4,7 @@ namespace Monetha\Adapter;
 
 interface OrderAdapterInterface {
     /**
-     * @return Interceptor[]
+     * @return InterceptorInterface[]
      */
     public function getItems();
 
