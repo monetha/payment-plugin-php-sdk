@@ -6,8 +6,6 @@ use Monetha\Adapter\ClientAdapterInterface;
 use Monetha\Adapter\ConfigAdapterInterface;
 use Monetha\Adapter\OrderAdapterInterface;
 use Monetha\Constants\ApiType;
-use Monetha\Constants\Resource;
-use Monetha\Constants\EventType;
 use Monetha\Helpers\JWT;
 use Monetha\Payload\CancelOrder as CancelOrderPayload;
 use Monetha\Payload\CreateClient as CreateClientPayload;
@@ -107,6 +105,8 @@ class GatewayService
 
         return $integrationSecret == $this->merchantSecret;
     }
+
+    // TODO: decide whether related to PS only
 
     public function configurationIsValid()
     {
@@ -245,52 +245,5 @@ class GatewayService
         $response = $request->send();
 
         return $response;
-    }
-
-    public function processAction($order, $data)
-    {
-        switch ($data->resource) {
-            case Resource::ORDER:
-                switch ($data->event) {
-                    case EventType::CANCELLED:
-                        return $this->cancelOrder($order, $data->payload->note);
-
-                    case EventType::FINALIZED:
-                        return $this->finalizeOrder($order);
-
-                    case EventType::MONEY_AUTHORIZED:
-                        return $this->finalizeOrderByCard($order);
-
-                    default:
-                        throw new \Exception('Bad action type');
-                }
-
-            default:
-                throw new \Exception('Bad resource');
-        }
-    }
-
-    private function cancelOrder($order, $note)
-    {
-        $history = new \OrderHistory();
-        $history->id_order = (int)$order->id;
-        $history->changeIdOrderState(6, (int)($order->id), true);
-        return $history->save();
-    }
-
-    private function finalizeOrder($order)
-    {
-        $history = new \OrderHistory();
-        $history->id_order = (int)$order->id;
-        $history->changeIdOrderState(2, (int)($order->id), true);
-        return $history->save();
-    }
-
-    private function finalizeOrderByCard($order)
-    {
-        $history = new \OrderHistory();
-        $history->id_order = (int)$order->id;
-        $history->changeIdOrderState(2, (int)($order->id), true);
-        return $history->save();
     }
 }
