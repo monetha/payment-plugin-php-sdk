@@ -11,5 +11,12 @@ namespace Monetha\Payload;
 
 class CancelOrder extends AbstractPayload
 {
-
+    /**
+     * CancelOrder constructor.
+     * @param array $payload
+     */
+    public function __construct(array $payload)
+    {
+        $this->setPayload($payload);
+    }
 }

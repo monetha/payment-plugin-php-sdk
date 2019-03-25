@@ -17,19 +17,18 @@ abstract class AbstractPayload
     protected $payload;
 
     /**
-     * AbstractPayload constructor.
-     * @param array $payload
-     */
-    public function __construct(array $payload = [])
-    {
-        $this->payload = $payload;
-    }
-
-    /**
      * @return string
      */
     public function __toString()
     {
         return \GuzzleHttp\json_encode($this->payload);
+    }
+
+    /**
+     * @param array $payload
+     */
+    protected function setPayload($payload)
+    {
+        $this->payload = $payload;
     }
 }

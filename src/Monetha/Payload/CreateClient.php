@@ -13,8 +13,6 @@ use Monetha\Adapter\ClientAdapterInterface;
 
 class CreateClient extends AbstractPayload
 {
-    // TODO: "L" from SOLID
-
     /**
      * CreateClient constructor.
      * @param ClientAdapterInterface $clientAdapter
@@ -31,6 +29,6 @@ class CreateClient extends AbstractPayload
             'zipcode' => $clientAdapter->getZipCode(),
         ];
 
-        parent::__construct($payload);
+        $this->setPayload($payload);
     }
 }

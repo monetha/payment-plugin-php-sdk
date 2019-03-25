@@ -34,61 +34,6 @@ class GatewayService
     }
 
     /**
-     * @param OrderAdapterInterface $orderAdapter
-     * @return array
-     */
-    public function prepareOfferBody(OrderAdapterInterface $orderAdapter)
-    {
-        $orderId = $orderAdapter->getCartId();
-        $items = [];
-        $cartItems = $orderAdapter->getItems();
-
-        $itemsPrice = 0;
-        foreach ($cartItems as $item) {
-            $price = round($item->getPrice(), 2);
-            $quantity = $item->getQtyOrdered();
-            $li = [
-                'name' => $item->getName(),
-                'quantity' => $quantity,
-                'amount_fiat' => $price,
-            ];
-            $itemsPrice += $price * $quantity;
-            if($price > 0)
-            {
-                $items[] = $li;
-            }
-        }
-
-        $itemsPrice = round($itemsPrice, 2);
-
-        $grandTotal = round($orderAdapter->getGrandTotalAmount(), 2);
-
-        // Add shipping and taxes
-        $shipping = [
-            'name' => 'Shipping and taxes',
-            'quantity' => 1,
-            'amount_fiat' => round($grandTotal - $itemsPrice, 2),
-        ];
-        
-        if($shipping['amount_fiat'] > 0)
-        {
-            $items[] = $shipping;
-        }
-
-        $deal = array(
-            'deal' => array(
-                'amount_fiat' => round($grandTotal, 2),
-                'currency_fiat' => $orderAdapter->getCurrencyCode(),
-                'line_items' => $items
-            ),
-            'return_url' => $orderAdapter->getBaseUrl(),
-            'callback_url' => $orderAdapter->getBaseUrl() . '/modules/monethagateway/webservices/actions.php',
-            'external_order_id' => $orderId . " ",
-        );        
-        return $deal;
-    }
-
-    /**
      * @return bool
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
@@ -213,18 +158,14 @@ class GatewayService
      */
     public function createOffer(OrderAdapterInterface $orderAdapter, ClientAdapterInterface $clientAdapter)
     {
-        $deal = $this->prepareOfferBody($orderAdapter);
-
         $clientResponse =  $this->createClient($clientAdapter);
         $clientId = $clientResponse->getClientId();
 
         // TODO: catch exceptions
 
-        $deal['deal']['client_id'] = $clientId;
-
         $apiUrl = $this->getApiUrl();
 
-        $payload = new CreateOfferPayload($deal);
+        $payload = new CreateOfferPayload($orderAdapter, $clientId);
         $request = new CreateOffer($payload, $this->mthApiKey, $apiUrl);
 
         /** @var \Monetha\Response\CreateOffer $response */
@@ -241,14 +182,13 @@ class GatewayService
      */
     public function executeOffer(OrderAdapterInterface $orderAdapter, ClientAdapterInterface $clientAdapter)
     {
-        $offerResponse = $this->createOffer($orderAdapter, $clientAdapter);
+        $createOfferResponse = $this->createOffer($orderAdapter, $clientAdapter);
 
         // TODO: catch exceptions
 
-        $apiUrl = $this->getApiUrl();
-        $body = ["token" => $offerResponse->getToken()];
+        $payload = new ExecuteOfferPayload($createOfferResponse);
 
-        $payload = new ExecuteOfferPayload($body);
+        $apiUrl = $this->getApiUrl();
         $request = new ExecuteOffer($payload, $this->mthApiKey, $apiUrl);
 
         /** @var \Monetha\Response\ExecuteOffer $response */
