@@ -3,6 +3,7 @@
 namespace Monetha\Services;
 
 use Monetha\Adapter\ClientAdapterInterface;
+use Monetha\Adapter\ConfigAdapterInterface;
 use Monetha\Adapter\OrderAdapterInterface;
 use Monetha\Constants\ApiType;
 use Monetha\Constants\Resource;
@@ -19,18 +20,67 @@ use Monetha\Request\CreateOffer;
 use Monetha\Request\ExecuteOffer;
 use Monetha\Request\ValidateApiKey;
 use Monetha\Response\CreateOffer as CreateOfferResponse;
+use Monetha\Response\Exception\ClientIdNotFoundException;
+use Monetha\Response\Exception\IntegrationSecretNotFoundException;
+use Monetha\Response\Exception\OrderIdNotFoundException;
+use Monetha\Response\Exception\OrderNotFoundException;
+use Monetha\Response\Exception\PaymentUrlNotFoundException;
+use Monetha\Response\Exception\TokenNotFoundException;
 
 class GatewayService
 {
-    public $merchantSecret;
-    public $mthApiKey;
-    public $testMode;
+    const EXCEPTION_MESSAGE_MAPPING = [
+        'INVALID_PHONE_NUMBER' => 'Invalid phone number',
+        'AUTH_TOKEN_INVALID' => 'Monetha plugin setup is invalid, please contact merchant.',
+        'INVALID_PHONE_COUNTRY_CODE' => 'This country code is invalid, please input correct country code.',
+        'AMOUNT_TOO_BIG' => 'The value of your cart exceeds the maximum amount. Please remove some of the items from the cart.',
+        'AMOUNT_TOO_SMALL' => 'amount_fiat in body should be greater than or equal to 0.01',
+        'PROCESSOR_MISSING' => 'Can\'t process order, please contact merchant.',
+        'UNSUPPORTED_CURRENCY' => 'Selected currency is not supported by Monetha.',
+    ];
 
-    public function __construct($merchantSecret, $mthApiKey, $testMode)
+    /**
+     * @var string
+     */
+    private $merchantSecret;
+
+    /**
+     * @var string
+     */
+    private $mthApiKey;
+
+    /**
+     * @var string
+     */
+    private $testMode;
+
+    public function __construct(ConfigAdapterInterface $configAdapter)
     {
-        $this->merchantSecret = $merchantSecret;
-        $this->mthApiKey = $mthApiKey;
-        $this->testMode = $testMode;
+        $this->merchantSecret = $configAdapter->getMerchantSecret();
+        $this->mthApiKey = $configAdapter->getMthApiKey();
+        $this->testMode = $configAdapter->getIsTestMode();
+    }
+
+    /**
+     * @param OrderAdapterInterface $orderAdapter
+     * @param ClientAdapterInterface $clientAdapter
+     * @return array
+     * @throws IntegrationSecretNotFoundException
+     * @throws ClientIdNotFoundException
+     * @throws OrderIdNotFoundException
+     * @throws OrderNotFoundException
+     * @throws PaymentUrlNotFoundException
+     * @throws TokenNotFoundException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function getPaymentUrl(OrderAdapterInterface $orderAdapter, ClientAdapterInterface $clientAdapter)
+    {
+        $executeOfferResponse = $this->executeOffer($orderAdapter, $clientAdapter);
+
+        // TODO: catch exceptions
+
+        return array('payment_url' => $executeOfferResponse->getPaymentUrl(), 'monetha_id' => $executeOfferResponse->getOrderId());
+        //return $executeOfferResponse->order->payment_url;
     }
 
     /**
@@ -72,7 +122,7 @@ class GatewayService
         return $signature == base64_encode(hash_hmac('sha256', $data, $this->merchantSecret, true));
     }
 
-    public function getMerchantId()
+    private function getMerchantId()
     {
         $tks = explode('.', $this->mthApiKey);
         if (count($tks) != 3) {
@@ -95,12 +145,12 @@ class GatewayService
         return null;
     }
 
-    public function isJson($str) {
+    private function isJson($str) {
         $json = json_decode($str);
         return $json && $str != $json;
     }
 
-    public function getApiUrl()
+    private function getApiUrl()
     {
         $apiUrl = ApiType::PROD;
 
@@ -137,7 +187,7 @@ class GatewayService
      * @return \Monetha\Response\CreateClient
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function createClient(ClientAdapterInterface $clientAdapter)
+    private function createClient(ClientAdapterInterface $clientAdapter)
     {
         $apiUrl = $this->getApiUrl();
 
@@ -156,7 +206,7 @@ class GatewayService
      * @return CreateOfferResponse
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function createOffer(OrderAdapterInterface $orderAdapter, ClientAdapterInterface $clientAdapter)
+    private function createOffer(OrderAdapterInterface $orderAdapter, ClientAdapterInterface $clientAdapter)
     {
         $clientResponse =  $this->createClient($clientAdapter);
         $clientId = $clientResponse->getClientId();
@@ -180,7 +230,7 @@ class GatewayService
      * @return \Monetha\Response\ExecuteOffer
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function executeOffer(OrderAdapterInterface $orderAdapter, ClientAdapterInterface $clientAdapter)
+    private function executeOffer(OrderAdapterInterface $orderAdapter, ClientAdapterInterface $clientAdapter)
     {
         $createOfferResponse = $this->createOffer($orderAdapter, $clientAdapter);
 
@@ -206,10 +256,10 @@ class GatewayService
                         return $this->cancelOrder($order, $data->payload->note);
 
                     case EventType::FINALIZED:
-                        return $this::finalizeOrder($order);
+                        return $this->finalizeOrder($order);
 
                     case EventType::MONEY_AUTHORIZED:
-                        return $this::finalizeOrderByCard($order);
+                        return $this->finalizeOrderByCard($order);
 
                     default:
                         throw new \Exception('Bad action type');
@@ -220,7 +270,7 @@ class GatewayService
         }
     }
 
-    public function cancelOrder($order, $note)
+    private function cancelOrder($order, $note)
     {
         $history = new \OrderHistory();
         $history->id_order = (int)$order->id;
@@ -228,7 +278,7 @@ class GatewayService
         return $history->save();
     }
 
-    public function finalizeOrder($order)
+    private function finalizeOrder($order)
     {
         $history = new \OrderHistory();
         $history->id_order = (int)$order->id;
@@ -236,7 +286,7 @@ class GatewayService
         return $history->save();
     }
 
-    public function finalizeOrderByCard($order)
+    private function finalizeOrderByCard($order)
     {
         $history = new \OrderHistory();
         $history->id_order = (int)$order->id;

@@ -2,10 +2,14 @@
 
 namespace Monetha;
 
+use Monetha\Adapter\ConfigAdapterInterface;
+use Monetha\PS16\Adapter\ConfigAdapterTrait;
 use Monetha\Services\GatewayService;
 
-class Config
+class Config implements ConfigAdapterInterface
 {
+    use ConfigAdapterTrait;
+
     const PARAM_ENABLED = 'enabled';
     const PARAM_TEST_MODE = 'testMode';
     const PARAM_MERCHANT_SECRET = 'merchantSecret';
@@ -88,8 +92,13 @@ class Config
             throw new \Exception('Invalid ' . self::$labels[self::PARAM_MONETHA_API_KEY] . ' parameter');
         }
 
+        $configAdapter = new self();
+        $configAdapter->testMode = $testMode;
+        $configAdapter->merchantSecret = $merchantSecret;
+        $configAdapter->monethaApiKey = $monethaApiKey;
+
         // Validate monetha api key with backend
-        $gatewayService = new GatewayService($merchantSecret, $monethaApiKey, $testMode);
+        $gatewayService = new GatewayService($configAdapter);
         if (!$gatewayService->validateApiKey()) {
             throw new \Exception('Merchant secret or Monetha Api Key is not valid!');
         }
