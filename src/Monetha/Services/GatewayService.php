@@ -203,23 +203,20 @@ class GatewayService
             case Resource::ORDER:
                 switch ($data->event) {
                     case EventType::CANCELLED:
-                        $this->cancelOrder($order, $data->payload->note);
-                        break;
+                        return $this->cancelOrder($order, $data->payload->note);
+
                     case EventType::FINALIZED:
-                        $this::finalizeOrder($order);
-                        break;
+                        return $this::finalizeOrder($order);
+
                     case EventType::MONEY_AUTHORIZED:
-                        $this::finalizeOrderByCard($order);
-                        break;
+                        return $this::finalizeOrderByCard($order);
+
                     default:
                         throw new \Exception('Bad action type');
-                        break;
                 }
-                break;
 
             default:
-            throw new \Exception('Bad resource');
-            break;
+                throw new \Exception('Bad resource');
         }
     }
 
@@ -228,7 +225,7 @@ class GatewayService
         $history = new \OrderHistory();
         $history->id_order = (int)$order->id;
         $history->changeIdOrderState(6, (int)($order->id), true);
-        $history->save();
+        return $history->save();
     }
 
     public function finalizeOrder($order)
@@ -236,7 +233,7 @@ class GatewayService
         $history = new \OrderHistory();
         $history->id_order = (int)$order->id;
         $history->changeIdOrderState(2, (int)($order->id), true);
-        $history->save();
+        return $history->save();
     }
 
     public function finalizeOrderByCard($order)
@@ -244,6 +241,6 @@ class GatewayService
         $history = new \OrderHistory();
         $history->id_order = (int)$order->id;
         $history->changeIdOrderState(2, (int)($order->id), true);
-        $history->save();
+        return $history->save();
     }
 }
