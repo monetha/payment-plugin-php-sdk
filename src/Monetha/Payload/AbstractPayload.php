@@ -14,7 +14,7 @@ abstract class AbstractPayload
     /**
      * @var array
      */
-    private $payload;
+    protected $payload;
 
     /**
      * AbstractPayload constructor.

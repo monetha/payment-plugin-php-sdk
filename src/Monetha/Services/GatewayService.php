@@ -188,15 +188,15 @@ class GatewayService
     }
 
     /**
-     * @param $clientBody
+     * @param ClientAdapterInterface $clientAdapter
      * @return \Monetha\Response\CreateClient
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function createClient($clientBody)
+    public function createClient(ClientAdapterInterface $clientAdapter)
     {
         $apiUrl = $this->getApiUrl();
 
-        $payload = new CreateClientPayload($clientBody);
+        $payload = new CreateClientPayload($clientAdapter);
         $request = new CreateClient($payload, $this->mthApiKey, $apiUrl);
 
         /** @var \Monetha\Response\CreateClient $response */
