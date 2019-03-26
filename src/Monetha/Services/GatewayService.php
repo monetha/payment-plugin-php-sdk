@@ -182,9 +182,7 @@ class GatewayService
         $apiUrl = $this->getApiUrl();
         $uri = 'v1/orders/' . $orderId .'/cancel';
 
-        $body = ['cancel_reason'=> 'Order cancelled from shop'];
-
-        $payload = new CancelOrderPayload($body);
+        $payload = new CancelOrderPayload();
         $request = new CancelOrder($payload, $this->mthApiKey, $apiUrl, $uri);
 
         /** @var \Monetha\Response\CancelOrder $response */

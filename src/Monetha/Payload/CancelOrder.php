@@ -13,10 +13,9 @@ class CancelOrder extends AbstractPayload
 {
     /**
      * CancelOrder constructor.
-     * @param array $payload
      */
-    public function __construct(array $payload)
+    public function __construct()
     {
-        $this->setPayload($payload);
+        $this->setPayload(['cancel_reason'=> 'Order cancelled from shop']);
     }
 }
