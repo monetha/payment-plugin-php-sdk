@@ -17,7 +17,9 @@ use Monetha\Request\CreateClient;
 use Monetha\Request\CreateOffer;
 use Monetha\Request\ExecuteOffer;
 use Monetha\Request\ValidateApiKey;
+use Monetha\Response\AbstractResponse;
 use Monetha\Response\CreateOffer as CreateOfferResponse;
+use Monetha\Response\Exception\ApiException;
 use Monetha\Response\Exception\ClientIdNotFoundException;
 use Monetha\Response\Exception\IntegrationSecretNotFoundException;
 use Monetha\Response\Exception\OrderIdNotFoundException;
@@ -27,12 +29,14 @@ use Monetha\Response\Exception\TokenNotFoundException;
 
 class GatewayService
 {
+    const UNKNOWN_ERROR_MESSAGE = 'Unknown error has occurred, please contact merchant.';
+
     const EXCEPTION_MESSAGE_MAPPING = [
         'INVALID_PHONE_NUMBER' => 'Invalid phone number',
         'AUTH_TOKEN_INVALID' => 'Monetha plugin setup is invalid, please contact merchant.',
         'INVALID_PHONE_COUNTRY_CODE' => 'This country code is invalid, please input correct country code.',
         'AMOUNT_TOO_BIG' => 'The value of your cart exceeds the maximum amount. Please remove some of the items from the cart.',
-        'AMOUNT_TOO_SMALL' => 'amount_fiat in body should be greater than or equal to 0.01',
+        'AMOUNT_TOO_SMALL' => 'Amount_fiat in body should be greater than or equal to 0.01',
         'PROCESSOR_MISSING' => 'Can\'t process order, please contact merchant.',
         'UNSUPPORTED_CURRENCY' => 'Selected currency is not supported by Monetha.',
     ];
@@ -62,27 +66,27 @@ class GatewayService
     /**
      * @param OrderAdapterInterface $orderAdapter
      * @param ClientAdapterInterface $clientAdapter
-     * @return array
-     * @throws IntegrationSecretNotFoundException
-     * @throws ClientIdNotFoundException
-     * @throws OrderIdNotFoundException
-     * @throws OrderNotFoundException
-     * @throws PaymentUrlNotFoundException
-     * @throws TokenNotFoundException
+     * @return AbstractResponse|\Monetha\Response\ExecuteOffer
+     * @throws ApiException
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getPaymentUrl(OrderAdapterInterface $orderAdapter, ClientAdapterInterface $clientAdapter)
+    public function getExecuteOfferResponse(OrderAdapterInterface $orderAdapter, ClientAdapterInterface $clientAdapter)
     {
         $executeOfferResponse = $this->executeOffer($orderAdapter, $clientAdapter);
+        if ($executeOfferResponse->isError()) {
+            $responseArray = $executeOfferResponse->getResponseArray();
+            error_log(sprintf('Monetha error occurred: %s, %s', $responseArray['code'], $responseArray['message']));
 
-        // TODO: catch exceptions
+            throw new ApiException($this->getErrorMessage($responseArray['code']));
+        }
 
-        return array('payment_url' => $executeOfferResponse->getPaymentUrl(), 'monetha_id' => $executeOfferResponse->getOrderId());
-        //return $executeOfferResponse->order->payment_url;
+        /** @var \Monetha\Response\ExecuteOffer $executeOfferResponse */
+        return $executeOfferResponse;
     }
 
     /**
      * @return bool
+     * @throws ApiException
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function validateApiKey()
@@ -99,9 +103,16 @@ class GatewayService
         $payload = new ValidateApiKeyPayload();
         $request = new ValidateApiKey($payload, $this->mthApiKey, $apiUrl, $uri);
 
-        /** @var \Monetha\Response\ValidateApiKey $response */
-        $response = $request->send();
-        $integrationSecret = $response->getIntegrationSecret();
+        $validateResponse = $request->send();
+        if ($validateResponse->isError()) {
+            $responseArray = $validateResponse->getResponseArray();
+            error_log(sprintf('Monetha error occurred: %s, %s', $responseArray['code'], $responseArray['message']));
+
+            throw new ApiException($this->getErrorMessage($responseArray['code']));
+        }
+
+        /** @var \Monetha\Response\ValidateApiKey $validateResponse */
+        $integrationSecret = $validateResponse->getIntegrationSecret();
 
         return $integrationSecret == $this->merchantSecret;
     }
@@ -184,7 +195,7 @@ class GatewayService
 
     /**
      * @param ClientAdapterInterface $clientAdapter
-     * @return \Monetha\Response\CreateClient
+     * @return \Monetha\Response\AbstractResponse
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
     private function createClient(ClientAdapterInterface $clientAdapter)
@@ -203,15 +214,19 @@ class GatewayService
     /**
      * @param OrderAdapterInterface $orderAdapter
      * @param ClientAdapterInterface $clientAdapter
-     * @return CreateOfferResponse
+     * @return AbstractResponse
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
     private function createOffer(OrderAdapterInterface $orderAdapter, ClientAdapterInterface $clientAdapter)
     {
         $clientResponse =  $this->createClient($clientAdapter);
-        $clientId = $clientResponse->getClientId();
+        if ($clientResponse->isError()) {
 
-        // TODO: catch exceptions
+            return $clientResponse;
+        }
+
+        /** @var \Monetha\Response\CreateClient $clientId */
+        $clientId = $clientResponse->getClientId();
 
         $apiUrl = $this->getApiUrl();
 
@@ -227,15 +242,20 @@ class GatewayService
     /**
      * @param OrderAdapterInterface $orderAdapter
      * @param ClientAdapterInterface $clientAdapter
-     * @return \Monetha\Response\ExecuteOffer
+     * @return \Monetha\Response\AbstractResponse
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
     private function executeOffer(OrderAdapterInterface $orderAdapter, ClientAdapterInterface $clientAdapter)
     {
         $createOfferResponse = $this->createOffer($orderAdapter, $clientAdapter);
+        if ($createOfferResponse->isError()) {
+
+            return $createOfferResponse;
+        }
 
         // TODO: catch exceptions
 
+        /** @var \Monetha\Response\CreateOffer $createOfferResponse */
         $payload = new ExecuteOfferPayload($createOfferResponse);
 
         $apiUrl = $this->getApiUrl();
@@ -245,5 +265,15 @@ class GatewayService
         $response = $request->send();
 
         return $response;
+    }
+
+    /**
+     * @param string $code
+     * @return string
+     */
+    private function getErrorMessage($code) {
+        return isset(self::EXCEPTION_MESSAGE_MAPPING[$code]) ?
+            self::EXCEPTION_MESSAGE_MAPPING[$code] :
+            self::UNKNOWN_ERROR_MESSAGE;
     }
 }

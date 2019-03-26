@@ -16,6 +16,7 @@ use Monetha\Payload\AbstractPayload;
 use InvalidArgumentException;
 use Monetha\Response\AbstractResponse;
 use Monetha\Response\Error;
+use Psr\Http\Message\ResponseInterface;
 
 abstract class AbstractRequest
 {
@@ -70,7 +71,7 @@ abstract class AbstractRequest
         $this->client = new Client(
             [
                 'base_uri' => $apiUrlPrefix,
-                'timeout'  => 30,
+                'timeout'  => 15,
                 'headers'  => [
                     'Content-Type' => 'application/json',
                     'Authorization' => 'Bearer ' . $token,
@@ -84,33 +85,47 @@ abstract class AbstractRequest
     }
 
     /**
-     * @return AbstractResponse
+     * @return AbstractResponse|Error
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
     final public function send()
     {
-        $responseArray = $this->makeRequest();
+        $responseToReturn = $this->response;
+        try {
+            $response = $this->getResponse($this->uri, $this->payload);
+            $json = $response->getBody()->getContents();
+            $responseArray = \GuzzleHttp\json_decode($json, true);
 
-        $this->response->setResponseArray($responseArray);
+        } catch (RequestException $e) {
+            $response = $e->getResponse();
+            $json = $response->getBody()->getContents();
+            $responseArray = \GuzzleHttp\json_decode($json, true);
 
-        return $this->response;
-    }
+            $responseToReturn = new Error();
+            $responseToReturn->setStatusCode($e->getCode());
+        } catch (InvalidArgumentException $e) {
+            // invalid JSON
+            $responseToLog = !is_null($json) ? $json : '';
+            $responseToReturn = new Error();
+            $responseArray = [
+                'code' => 'INVALID_JSON',
+                'message' => sprintf(
+                    'Exception: %, Raw response: %s',
+                    $e->getMessage(),
+                    $responseToLog
+                ),
+            ];
+        }
 
-    /**
-     * @return array
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    protected function makeRequest()
-    {
-        $responseArray = $this->getResponse($this->uri, $this->payload);
+        $responseToReturn->setResponseArray($responseArray);
 
-        return $responseArray;
+        return $responseToReturn;
     }
 
     /**
      * @param string $uri
      * @param AbstractPayload $payload
-     * @return array
+     * @return ResponseInterface
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
     private function getResponse($uri, AbstractPayload $payload) {
@@ -123,34 +138,8 @@ abstract class AbstractRequest
             ]
         );
 
-        $json = $response->getBody()->getContents();
-        $arrayResponse = \GuzzleHttp\json_decode($json, true);
-
-        return $arrayResponse;
+        return $response;
     }
-
-//    private function handleException(RequestException $e) {
-//        if ($e instanceof InvalidArgumentException) {
-//
-//            $errorResponse = new Error([
-//                'message' => $e->getMessage(),
-//            ]);
-//            $errorResponse->setStatusCode($e->getCode());
-//
-//            return $errorResponse;
-//        }
-//
-//        $response = $e->getResponse();
-//
-//        $content = $response->getBody()->getContents();
-//        $responseArray = \GuzzleHttp\json_decode($content, true);
-//        $errorResponse = new Error($responseArray);
-//
-//        $statusCode = $response->getStatusCode();
-//        $errorResponse->setStatusCode($statusCode);
-//
-//        return $errorResponse;
-//    }
 
     /**
      * @param string $uri
