@@ -44,11 +44,11 @@ class ExecuteOffer extends AbstractResponse
      */
     public function getPaymentUrl()
     {
-        if (empty($this->order['payment_url'])) {
+        if (empty($this->order->payment_url)) {
             throw new PaymentUrlNotFoundException('Payment url not found, order: ' . json_encode($this->order));
         }
 
-        return $this->order['payment_url'];
+        return $this->order->payment_url;
     }
 
     /**
@@ -57,10 +57,10 @@ class ExecuteOffer extends AbstractResponse
      */
     public function getOrderId()
     {
-        if (empty($this->order['id'])) {
+        if (empty($this->order->id)) {
             throw new OrderIdNotFoundException('Order id not found, order: ' . json_encode($this->order));
         }
 
-        return $this->order['id'];
+        return $this->order->id;
     }
 }

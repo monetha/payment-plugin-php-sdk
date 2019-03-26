@@ -80,8 +80,8 @@ abstract class AbstractRequest
             CURLOPT_URL => $this->apiUrlPrefix . $this->uri,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HTTPHEADER =>  [
-                'Content-Type' => 'application/json',
-                'Authorization' => 'Bearer ' . $this->token,
+                'Content-Type: application/json',
+                'Authorization: Bearer ' . $this->token,
             ],
         ];
 
@@ -146,6 +146,8 @@ abstract class AbstractRequest
             return $errorResponse;
         }
 
-        return (array) $resJson;
+        $this->response->setResponseArray((array) $resJson);
+
+        return $this->response;
     }
 }
