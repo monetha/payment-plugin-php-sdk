@@ -31,7 +31,7 @@ class ExecuteOffer extends AbstractResponse
 
         if (empty($dataResponseItem['order'])) {
             throw new OrderNotFoundException(
-                'Order not found, response: ' . \GuzzleHttp\json_encode($dataResponseItem)
+                'Order not found, response: ' . json_encode($dataResponseItem)
             );
         }
 
@@ -45,7 +45,7 @@ class ExecuteOffer extends AbstractResponse
     public function getPaymentUrl()
     {
         if (empty($this->order['payment_url'])) {
-            throw new PaymentUrlNotFoundException('Payment url not found, order: ' . \GuzzleHttp\json_encode($this->order));
+            throw new PaymentUrlNotFoundException('Payment url not found, order: ' . json_encode($this->order));
         }
 
         return $this->order['payment_url'];
@@ -58,7 +58,7 @@ class ExecuteOffer extends AbstractResponse
     public function getOrderId()
     {
         if (empty($this->order['id'])) {
-            throw new OrderIdNotFoundException('Order id not found, order: ' . \GuzzleHttp\json_encode($this->order));
+            throw new OrderIdNotFoundException('Order id not found, order: ' . json_encode($this->order));
         }
 
         return $this->order['id'];

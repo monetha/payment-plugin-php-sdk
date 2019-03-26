@@ -29,7 +29,7 @@ class ValidateApiKey extends AbstractResponse
 
         if (empty($dataResponseItem['integration_secret'])) {
             throw new IntegrationSecretNotFoundException(
-                'Integration secret not found, response: ' . \GuzzleHttp\json_encode($dataResponseItem)
+                'Integration secret not found, response: ' . json_encode($dataResponseItem)
             );
         }
 

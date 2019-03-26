@@ -29,7 +29,7 @@ class CreateOffer extends AbstractResponse
 
         if (empty($dataResponseItem['token'])) {
             throw new TokenNotFoundException(
-                'Token not found, response: ' . \GuzzleHttp\json_encode($dataResponseItem)
+                'Token not found, response: ' . json_encode($dataResponseItem)
             );
         }
 

@@ -21,7 +21,7 @@ abstract class AbstractPayload
      */
     public function __toString()
     {
-        return \GuzzleHttp\json_encode($this->payload);
+        return json_encode($this->payload);
     }
 
     /**

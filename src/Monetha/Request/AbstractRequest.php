@@ -94,12 +94,12 @@ abstract class AbstractRequest
         try {
             $response = $this->getResponse($this->uri, $this->payload);
             $json = $response->getBody()->getContents();
-            $responseArray = \GuzzleHttp\json_decode($json, true);
+            $responseArray = json_decode($json, true);
 
         } catch (RequestException $e) {
             $response = $e->getResponse();
             $json = $response->getBody()->getContents();
-            $responseArray = \GuzzleHttp\json_decode($json, true);
+            $responseArray = json_decode($json, true);
 
             $responseToReturn = new Error();
             $responseToReturn->setStatusCode($e->getCode());

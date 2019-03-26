@@ -29,7 +29,7 @@ class CreateClient extends AbstractResponse
 
         if (empty($dataResponseItem['client_id'])) {
             throw new ClientIdNotFoundException(
-                'Client id not found, response: ' . \GuzzleHttp\json_encode($dataResponseItem)
+                'Client id not found, response: ' . json_encode($dataResponseItem)
             );
         }
 
