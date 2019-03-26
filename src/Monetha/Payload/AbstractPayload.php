@@ -21,7 +21,7 @@ abstract class AbstractPayload
      */
     public function __toString()
     {
-        return json_encode($this->payload);
+        return !is_null($this->payload) ? json_encode($this->payload) : '';
     }
 
     /**

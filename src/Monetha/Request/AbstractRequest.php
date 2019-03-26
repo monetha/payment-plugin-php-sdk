@@ -9,22 +9,12 @@
 namespace Monetha\Request;
 
 
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Psr7\Request;
 use Monetha\Payload\AbstractPayload;
-use InvalidArgumentException;
 use Monetha\Response\AbstractResponse;
 use Monetha\Response\Error;
-use Psr\Http\Message\ResponseInterface;
 
 abstract class AbstractRequest
 {
-    /**
-     * @var string
-     */
-    private $apiUrlPrefix;
-
     /**
      * @var AbstractPayload
      */
@@ -41,9 +31,9 @@ abstract class AbstractRequest
     private $token;
 
     /**
-     * @var Client
+     * @var string
      */
-    private $client;
+    private $apiUrlPrefix;
 
     /**
      * @var AbstractResponse
@@ -68,17 +58,6 @@ abstract class AbstractRequest
         $this->token = $token;
         $this->apiUrlPrefix = $apiUrlPrefix;
 
-        $this->client = new Client(
-            [
-                'base_uri' => $apiUrlPrefix,
-                'timeout'  => 15,
-                'headers'  => [
-                    'Content-Type' => 'application/json',
-                    'Authorization' => 'Bearer ' . $token,
-                ],
-            ]
-        );
-
         if (!$this->uri) {
             $this->uri = $uri;
         }
@@ -86,66 +65,86 @@ abstract class AbstractRequest
 
     /**
      * @return AbstractResponse|Error
-     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     final public function send()
     {
-        $responseToReturn = $this->response;
-        try {
-            $response = $this->getResponse($this->uri, $this->payload);
-            $json = $response->getBody()->getContents();
-            $responseArray = json_decode($json, true);
-
-        } catch (RequestException $e) {
-            $response = $e->getResponse();
-            $json = $response->getBody()->getContents();
-            $responseArray = json_decode($json, true);
-
-            $responseToReturn = new Error();
-            $responseToReturn->setStatusCode($e->getCode());
-        } catch (InvalidArgumentException $e) {
-            // invalid JSON
-            $responseToLog = !is_null($json) ? $json : '';
-            $responseToReturn = new Error();
-            $responseArray = [
-                'code' => 'INVALID_JSON',
-                'message' => sprintf(
-                    'Exception: %, Raw response: %s',
-                    $e->getMessage(),
-                    $responseToLog
-                ),
-            ];
-        }
-
-        $responseToReturn->setResponseArray($responseArray);
-
-        return $responseToReturn;
-    }
-
-    /**
-     * @param string $uri
-     * @param AbstractPayload $payload
-     * @return ResponseInterface
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    private function getResponse($uri, AbstractPayload $payload) {
-        $request = $this->buildRequest($uri);
-
-        $response = $this->client->send(
-            $request,
-            [
-                'body' => (string) $payload,
-            ]
-        );
+        $response = $this->getResponse($this->payload);
 
         return $response;
     }
 
-    /**
-     * @param string $uri
-     * @return Request
-     */
-    private function buildRequest($uri) {
-        return new Request($this->method, $uri);
+    private function getResponse(AbstractPayload $payload) {
+        $chSign = curl_init();
+
+        $options = [
+            CURLOPT_URL => $this->apiUrlPrefix . $this->uri,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER =>  [
+                'Content-Type' => 'application/json',
+                'Authorization' => 'Bearer ' . $this->token,
+            ],
+        ];
+
+        $body = (string) $payload;
+        if ($this->method !== 'GET' && $body) {
+            $options[CURLOPT_POSTFIELDS] = $body;
+            $options[CURLOPT_CUSTOMREQUEST] = $this->method;
+        }
+
+        curl_setopt_array($chSign, $options);
+
+        $res = curl_exec($chSign);
+        $error = curl_error($chSign);
+
+        $responseCode = curl_getinfo($chSign, CURLINFO_HTTP_CODE);
+
+        curl_close($chSign);
+
+        if ($error) {
+            $errorResponse = new Error();
+            $errorResponse->setStatusCode($responseCode);
+            $errorResponse->setResponseArray([
+                'code' => $responseCode,
+                'message' => sprintf(
+                    'Error: %s, Raw response: %s',
+                    $error,
+                    $res
+                ),
+            ]);
+
+            return $errorResponse;
+        }
+
+        $resJson = json_decode($res);
+
+
+        if (json_last_error()) {
+            $jsonErrorMessage = json_last_error_msg();
+            $jsonError = new Error();
+            $jsonError->setStatusCode($responseCode);
+            $jsonError->setResponseArray([
+                'code' => 'INVALID_JSON',
+                'message' => sprintf(
+                    'Error: %s, Raw response: %s',
+                    $jsonErrorMessage,
+                    $res
+                ),
+            ]);
+
+            return $jsonError;
+        }
+
+        if ($responseCode >= 300 && $resJson instanceof \stdClass) {
+            $errorResponse = new Error();
+            $errorResponse->setStatusCode($responseCode);
+            $errorResponse->setResponseArray([
+                'code' => !empty($resJson->code) ? $resJson->code : $responseCode,
+                'message' => !empty($resJson->message) ? $resJson->message : $res,
+            ]);
+
+            return $errorResponse;
+        }
+
+        return (array) $resJson;
     }
 }
