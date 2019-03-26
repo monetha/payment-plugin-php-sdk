@@ -74,7 +74,7 @@ abstract class AbstractRequest
     }
 
     private function getResponse(AbstractPayload $payload) {
-        $chSign = curl_init();
+        // TODO: timeout
 
         $options = [
             CURLOPT_URL => $this->apiUrlPrefix . $this->uri,
@@ -85,12 +85,13 @@ abstract class AbstractRequest
             ],
         ];
 
+        $options[CURLOPT_CUSTOMREQUEST] = $this->method;
+
         $body = (string) $payload;
         if ($this->method !== 'GET' && $body) {
             $options[CURLOPT_POSTFIELDS] = $body;
-            $options[CURLOPT_CUSTOMREQUEST] = $this->method;
         }
-
+        $chSign = curl_init();
         curl_setopt_array($chSign, $options);
 
         $res = curl_exec($chSign);
