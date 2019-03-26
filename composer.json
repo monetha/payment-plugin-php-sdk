@@ -7,7 +7,7 @@
         }
     ],
     "require": {
-        "guzzlehttp/guzzle": "~5.0"
+        "guzzlehttp/guzzle": "5.3.3"
     },
     "version": "1.0.0",
     "autoload": {
