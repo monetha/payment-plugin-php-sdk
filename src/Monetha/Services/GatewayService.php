@@ -68,7 +68,6 @@ class GatewayService
      * @param ClientAdapterInterface $clientAdapter
      * @return AbstractResponse|\Monetha\Response\ExecuteOffer
      * @throws ApiException
-     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getExecuteOfferResponse(OrderAdapterInterface $orderAdapter, ClientAdapterInterface $clientAdapter)
     {
@@ -87,7 +86,6 @@ class GatewayService
     /**
      * @return bool
      * @throws ApiException
-     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function validateApiKey()
     {
@@ -175,7 +173,6 @@ class GatewayService
     /**
      * @param $orderId
      * @return \Monetha\Response\CancelOrder
-     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function cancelExternalOrder($orderId)
     {
@@ -194,7 +191,6 @@ class GatewayService
     /**
      * @param ClientAdapterInterface $clientAdapter
      * @return \Monetha\Response\AbstractResponse
-     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     private function createClient(ClientAdapterInterface $clientAdapter)
     {
@@ -213,7 +209,6 @@ class GatewayService
      * @param OrderAdapterInterface $orderAdapter
      * @param ClientAdapterInterface $clientAdapter
      * @return AbstractResponse
-     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     private function createOffer(OrderAdapterInterface $orderAdapter, ClientAdapterInterface $clientAdapter)
     {
@@ -241,7 +236,6 @@ class GatewayService
      * @param OrderAdapterInterface $orderAdapter
      * @param ClientAdapterInterface $clientAdapter
      * @return \Monetha\Response\AbstractResponse
-     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     private function executeOffer(OrderAdapterInterface $orderAdapter, ClientAdapterInterface $clientAdapter)
     {
