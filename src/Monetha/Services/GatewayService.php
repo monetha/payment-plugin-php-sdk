@@ -264,7 +264,7 @@ class GatewayService
      * @return string
      */
     private function getErrorMessage($code) {
-        return isset(self::EXCEPTION_MESSAGE_MAPPING[$code]) ?
+        return !empty(self::EXCEPTION_MESSAGE_MAPPING[$code]) ?
             self::EXCEPTION_MESSAGE_MAPPING[$code] :
             self::UNKNOWN_ERROR_MESSAGE;
     }
