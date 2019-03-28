@@ -9,7 +9,7 @@
 namespace Monetha\Response\Exception;
 
 
-class OrderIdNotFoundException extends \Exception
+class OrderIdNotFoundException extends ApiException
 {
 
 }

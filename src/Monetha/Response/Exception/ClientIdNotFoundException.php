@@ -9,7 +9,7 @@
 namespace Monetha\Response\Exception;
 
 
-class ClientIdNotFoundException extends \Exception
+class ClientIdNotFoundException extends ApiException
 {
 
 }

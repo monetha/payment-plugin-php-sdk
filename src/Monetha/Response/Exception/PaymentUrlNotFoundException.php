@@ -9,7 +9,7 @@
 namespace Monetha\Response\Exception;
 
 
-class PaymentUrlNotFoundException extends \Exception
+class PaymentUrlNotFoundException extends ApiException
 {
 
 }

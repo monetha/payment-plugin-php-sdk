@@ -9,7 +9,7 @@
 namespace Monetha\Response\Exception;
 
 
-class IntegrationSecretNotFoundException extends \Exception
+class IntegrationSecretNotFoundException extends ApiException
 {
 
 }

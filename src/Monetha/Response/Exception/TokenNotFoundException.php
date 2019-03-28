@@ -9,7 +9,7 @@
 namespace Monetha\Response\Exception;
 
 
-class TokenNotFoundException extends \Exception
+class TokenNotFoundException extends ApiException
 {
 
 }
