@@ -43,8 +43,8 @@ class CreateOffer extends AbstractPayload
             $quantity = $item->getQtyOrdered();
             $li = [
                 'name' => $item->getName(),
-                'quantity' => $quantity,
-                'amount_fiat' => $price,
+                'quantity' => (int) $quantity,
+                'amount_fiat' => (float) $price,
             ];
             $itemsPrice += $price * $quantity;
             if($price > 0)
