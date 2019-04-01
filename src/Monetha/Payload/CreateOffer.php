@@ -77,7 +77,7 @@ class CreateOffer extends AbstractPayload
             ),
             'return_url' => $orderAdapter->getBaseUrl(),
             'callback_url' => $orderAdapter->getBaseUrl() . '/modules/monethagateway/webservices/actions.php',
-            'external_order_id' => $orderId . " ",
+            'external_order_id' => (string) $orderId,
         );
         return $deal;
     }
