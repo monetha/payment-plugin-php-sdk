@@ -22,7 +22,7 @@ class CreateClient extends AbstractPayload
         $payload = [
             'contact_name' => $clientAdapter->getContactName(),
             'contact_email' => $clientAdapter->getContactEmail(),
-            'contact_phone_number' => $clientAdapter->getContactPhoneNumber(),
+            'contact_phone_number' => preg_replace('/\D/', '', $clientAdapter->getContactPhoneNumber()),
             'country_code_iso' => $clientAdapter->getCountryIsoCode(),
             'address' => $clientAdapter->getAddress(),
             'city' => $clientAdapter->getCity(),
