@@ -115,17 +115,6 @@ class GatewayService
         return $integrationSecret == $this->merchantSecret;
     }
 
-    // TODO: decide whether related to PS only
-
-    public function configurationIsValid()
-    {
-        return (
-            !empty($this->merchantSecret) &&
-            !empty($this->mthApiKey) &&
-            !empty($this->testMode)
-        );
-    }
-
     public function validateSignature($signature, $data)
     {
         return $signature == base64_encode(hash_hmac('sha256', $data, $this->merchantSecret, true));
