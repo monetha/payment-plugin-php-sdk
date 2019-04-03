@@ -12,11 +12,12 @@ namespace Monetha\Response;
 use Monetha\Response\Exception\OrderIdNotFoundException;
 use Monetha\Response\Exception\OrderNotFoundException;
 use Monetha\Response\Exception\PaymentUrlNotFoundException;
+use stdClass;
 
 class ExecuteOffer extends AbstractResponse
 {
     /**
-     * @var array
+     * @var stdClass
      */
     private $order;
 
@@ -62,5 +63,13 @@ class ExecuteOffer extends AbstractResponse
         }
 
         return $this->order->id;
+    }
+
+    /**
+     * @return stdClass
+     */
+    public function getOrder()
+    {
+        return $this->order;
     }
 }

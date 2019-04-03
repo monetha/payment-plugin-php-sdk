@@ -12,6 +12,13 @@ use Monetha\Constants\EventType;
  * @package Monetha\Adapter
  */
 abstract class WebHookAdapterAbstract implements WebHookAdapterInterface {
+    /**
+     * @param ConfigAdapterInterface $configAdapter
+     * @param string $body
+     * @param string $signature
+     * @return bool
+     * @throws ValidationException
+     */
     final public function processWebHook(ConfigAdapterInterface $configAdapter, $body, $signature)
     {
         $data = json_decode($body);

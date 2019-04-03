@@ -86,6 +86,7 @@ class GatewayService
     /**
      * @return bool
      * @throws ApiException
+     * @throws IntegrationSecretNotFoundException
      */
     public function validateApiKey()
     {
@@ -180,6 +181,8 @@ class GatewayService
     /**
      * @param ClientAdapterInterface $clientAdapter
      * @return \Monetha\Response\AbstractResponse| \Monetha\Response\CreateClient
+     *
+     * @throws ClientIdNotFoundException
      */
     private function createClient(ClientAdapterInterface $clientAdapter)
     {
@@ -198,8 +201,10 @@ class GatewayService
      * @param OrderAdapterInterface $orderAdapter
      * @param ClientAdapterInterface $clientAdapter
      * @return AbstractResponse
+     *
+     * @throws TokenNotFoundException
      */
-    private function createOffer(OrderAdapterInterface $orderAdapter, ClientAdapterInterface $clientAdapter)
+    public function createOffer(OrderAdapterInterface $orderAdapter, ClientAdapterInterface $clientAdapter)
     {
         $clientResponse =  $this->createClient($clientAdapter);
         if ($clientResponse->isError()) {
@@ -225,8 +230,10 @@ class GatewayService
      * @param OrderAdapterInterface $orderAdapter
      * @param ClientAdapterInterface $clientAdapter
      * @return \Monetha\Response\AbstractResponse
+     *
+     * @throws OrderNotFoundException
      */
-    private function executeOffer(OrderAdapterInterface $orderAdapter, ClientAdapterInterface $clientAdapter)
+    public function executeOffer(OrderAdapterInterface $orderAdapter, ClientAdapterInterface $clientAdapter)
     {
         $createOfferResponse = $this->createOffer($orderAdapter, $clientAdapter);
         if ($createOfferResponse->isError()) {
