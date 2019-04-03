@@ -9,6 +9,7 @@
 namespace Monetha\Payload;
 
 
+use Monetha\Adapter\CallbackUrlInterface;
 use Monetha\Adapter\OrderAdapterInterface;
 
 class CreateOffer extends AbstractPayload
@@ -76,9 +77,14 @@ class CreateOffer extends AbstractPayload
                 'line_items' => $items
             ),
             'return_url' => $orderAdapter->getBaseUrl(),
-            'callback_url' => $orderAdapter->getBaseUrl() . '/modules/monethagateway/webservices/actions.php',
+            'callback_url' => $orderAdapter->getBaseUrl(),
             'external_order_id' => (string) $orderId,
         );
+
+        if ($orderAdapter instanceof CallbackUrlInterface) {
+            $deal['callback_url'] = $orderAdapter->getCallbackUrl();
+        }
+
         return $deal;
     }
 }

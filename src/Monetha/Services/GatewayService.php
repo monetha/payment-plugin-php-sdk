@@ -179,7 +179,7 @@ class GatewayService
 
     /**
      * @param ClientAdapterInterface $clientAdapter
-     * @return \Monetha\Response\AbstractResponse
+     * @return \Monetha\Response\AbstractResponse| \Monetha\Response\CreateClient
      */
     private function createClient(ClientAdapterInterface $clientAdapter)
     {
