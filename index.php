@@ -62,7 +62,7 @@ class Client implements ClientAdapterInterface {
 
     public function getAddress()
     {
-        return 'Gedimino prospektas,, 1-23';
+        return $this->address;
     }
 }
 
