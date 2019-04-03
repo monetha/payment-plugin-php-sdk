@@ -29,18 +29,6 @@ use Monetha\Response\Exception\TokenNotFoundException;
 
 class GatewayService
 {
-    const UNKNOWN_ERROR_MESSAGE = 'Unknown error has occurred, please contact merchant.';
-
-    const EXCEPTION_MESSAGE_MAPPING = [
-        'INVALID_PHONE_NUMBER' => 'Invalid phone number',
-        'AUTH_TOKEN_INVALID' => 'Monetha plugin setup is invalid, please contact merchant.',
-        'INVALID_PHONE_COUNTRY_CODE' => 'This country code is invalid, please input correct country code.',
-        'AMOUNT_TOO_BIG' => 'The value of your cart exceeds the maximum amount. Please remove some of the items from the cart.',
-        'AMOUNT_TOO_SMALL' => 'Amount_fiat in body should be greater than or equal to 0.01',
-        'PROCESSOR_MISSING' => 'Can\'t process order, please contact merchant.',
-        'UNSUPPORTED_CURRENCY' => 'Selected currency is not supported by Monetha.',
-    ];
-
     /**
      * @var string
      */
@@ -71,13 +59,10 @@ class GatewayService
      */
     public function getExecuteOfferResponse(OrderAdapterInterface $orderAdapter, ClientAdapterInterface $clientAdapter)
     {
-        $executeOfferResponse = $this->executeOffer($orderAdapter, $clientAdapter);
-        if ($executeOfferResponse->isError()) {
-            $responseArray = $executeOfferResponse->getResponseArray();
-            error_log(sprintf('Monetha error occurred: %s, %s', $responseArray['code'], $responseArray['message']));
+        $createOfferResponse = $this->createOffer($orderAdapter, $clientAdapter);
+        $token = $createOfferResponse->getToken();
 
-            throw new ApiException($this->getErrorMessage($responseArray['code']));
-        }
+        $executeOfferResponse = $this->executeOffer($token);
 
         /** @var \Monetha\Response\ExecuteOffer $executeOfferResponse */
         return $executeOfferResponse;
@@ -86,7 +71,6 @@ class GatewayService
     /**
      * @return bool
      * @throws ApiException
-     * @throws IntegrationSecretNotFoundException
      */
     public function validateApiKey()
     {
@@ -103,12 +87,6 @@ class GatewayService
         $request = new ValidateApiKey($payload, $this->mthApiKey, $apiUrl, $uri);
 
         $validateResponse = $request->send();
-        if ($validateResponse->isError()) {
-            $responseArray = $validateResponse->getResponseArray();
-            error_log(sprintf('Monetha error occurred: %s, %s', $responseArray['code'], $responseArray['message']));
-
-            throw new ApiException($this->getErrorMessage($responseArray['code']));
-        }
 
         /** @var \Monetha\Response\ValidateApiKey $validateResponse */
         $integrationSecret = $validateResponse->getIntegrationSecret();
@@ -163,6 +141,7 @@ class GatewayService
     /**
      * @param $orderId
      * @return \Monetha\Response\CancelOrder
+     * @throws ApiException
      */
     public function cancelExternalOrder($orderId)
     {
@@ -180,9 +159,8 @@ class GatewayService
 
     /**
      * @param ClientAdapterInterface $clientAdapter
-     * @return \Monetha\Response\AbstractResponse| \Monetha\Response\CreateClient
-     *
-     * @throws ClientIdNotFoundException
+     * @return \Monetha\Response\CreateClient
+     * @throws ApiException
      */
     private function createClient(ClientAdapterInterface $clientAdapter)
     {
@@ -200,17 +178,12 @@ class GatewayService
     /**
      * @param OrderAdapterInterface $orderAdapter
      * @param ClientAdapterInterface $clientAdapter
-     * @return AbstractResponse
-     *
-     * @throws TokenNotFoundException
+     * @return CreateOfferResponse
+     * @throws ApiException
      */
     public function createOffer(OrderAdapterInterface $orderAdapter, ClientAdapterInterface $clientAdapter)
     {
         $clientResponse =  $this->createClient($clientAdapter);
-        if ($clientResponse->isError()) {
-
-            return $clientResponse;
-        }
 
         /** @var \Monetha\Response\CreateClient $clientId */
         $clientId = $clientResponse->getClientId();
@@ -227,24 +200,14 @@ class GatewayService
     }
 
     /**
-     * @param OrderAdapterInterface $orderAdapter
-     * @param ClientAdapterInterface $clientAdapter
-     * @return \Monetha\Response\AbstractResponse
-     *
-     * @throws OrderNotFoundException
+     * @param $token
+     * @return \Monetha\Response\ExecuteOffer
+     * @throws ApiException
      */
-    public function executeOffer(OrderAdapterInterface $orderAdapter, ClientAdapterInterface $clientAdapter)
+    public function executeOffer($token)
     {
-        $createOfferResponse = $this->createOffer($orderAdapter, $clientAdapter);
-        if ($createOfferResponse->isError()) {
-
-            return $createOfferResponse;
-        }
-
-        // TODO: catch exceptions
-
         /** @var \Monetha\Response\CreateOffer $createOfferResponse */
-        $payload = new ExecuteOfferPayload($createOfferResponse);
+        $payload = new ExecuteOfferPayload($token);
 
         $apiUrl = $this->getApiUrl();
         $request = new ExecuteOffer($payload, $this->mthApiKey, $apiUrl);
@@ -253,15 +216,5 @@ class GatewayService
         $response = $request->send();
 
         return $response;
-    }
-
-    /**
-     * @param string $code
-     * @return string
-     */
-    private function getErrorMessage($code) {
-        return !empty(self::EXCEPTION_MESSAGE_MAPPING[$code]) ?
-            self::EXCEPTION_MESSAGE_MAPPING[$code] :
-            self::UNKNOWN_ERROR_MESSAGE;
     }
 }

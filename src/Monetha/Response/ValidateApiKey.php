@@ -10,6 +10,7 @@ namespace Monetha\Response;
 
 
 use Monetha\Response\Exception\IntegrationSecretNotFoundException;
+use stdClass;
 
 class ValidateApiKey extends AbstractResponse
 {
@@ -20,20 +21,20 @@ class ValidateApiKey extends AbstractResponse
 
     /**
      * ValidateApiKey constructor.
-     * @param array $dataResponseItem
+     * @param stdClass $responseJson
      * @throws IntegrationSecretNotFoundException
      */
-    public function setResponseArray(array $dataResponseItem)
+    public function setResponseJson(stdClass $responseJson)
     {
-        parent::setResponseArray($dataResponseItem);
+        parent::setResponseJson($responseJson);
 
-        if (empty($dataResponseItem['integration_secret'])) {
+        if (empty($responseJson->integration_secret)) {
             throw new IntegrationSecretNotFoundException(
-                'Integration secret not found, response: ' . json_encode($dataResponseItem)
+                'Integration secret not found, response: ' . json_encode($responseJson)
             );
         }
 
-        $this->integrationSecret = $dataResponseItem['integration_secret'];
+        $this->integrationSecret = $responseJson->integration_secret;
     }
 
     /**

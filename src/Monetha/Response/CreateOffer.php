@@ -10,6 +10,7 @@ namespace Monetha\Response;
 
 
 use Monetha\Response\Exception\TokenNotFoundException;
+use stdClass;
 
 class CreateOffer extends AbstractResponse
 {
@@ -20,20 +21,20 @@ class CreateOffer extends AbstractResponse
 
     /**
      * CreateOffer constructor.
-     * @param array $dataResponseItem
+     * @param stdClass $responseJson
      * @throws TokenNotFoundException
      */
-    public function setResponseArray(array $dataResponseItem)
+    public function setResponseJson(stdClass $responseJson)
     {
-        parent::setResponseArray($dataResponseItem);
+        parent::setResponseJson($responseJson);
 
-        if (empty($dataResponseItem['token'])) {
+        if (empty($responseJson->token)) {
             throw new TokenNotFoundException(
-                'Token not found, response: ' . json_encode($dataResponseItem)
+                'Token not found, response: ' . json_encode($responseJson)
             );
         }
 
-        $this->token = $dataResponseItem['token'];
+        $this->token = $responseJson->token;
     }
 
     /**

@@ -194,15 +194,24 @@ $gateway = new GatewayService($config);
 try {
     $gateway->validateApiKey();
 
-    $executeOfferResponse = $gateway->getExecuteOfferResponse($order, $client);
+    $createOfferResponse = $gateway->createOffer($order, $client);
+    $token = $createOfferResponse->getToken();
+
+    $executeOfferResponse = $gateway->executeOffer($token);
 
     $paymentUrl = $executeOfferResponse->getPaymentUrl();
     $monethaOrder = $executeOfferResponse->getOrder();
 
 } catch(ApiException $e) {
-    error_log($e->getMessage());
+    error_log(
+        'Status code: ' . $e->getApiStatusCode() .
+        ', error: ' . $e->getApiErrorCode() .
+        ', message: ' . $e->getApiErrorMessage()
+    );
 
-    var_dump($e);
+//    var_dump($e);
+    echo $e->getFriendlyMessage();
+
     return;
 }
 

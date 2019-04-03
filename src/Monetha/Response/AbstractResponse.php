@@ -8,38 +8,28 @@
 
 namespace Monetha\Response;
 
+use stdClass;
+
 abstract class AbstractResponse
 {
     /**
-     * @var array
+     * @var stdClass
      */
-    protected $responseArray = [];
+    protected $responseJson;
 
     /**
-     * @var bool
+     * @param stdClass $responseJson
      */
-    protected $isError = false;
-
-    /**
-     * @return bool
-     */
-    public function isError() {
-        return $this->isError;
+    public function setResponseJson(stdClass $responseJson)
+    {
+        $this->responseJson = $responseJson;
     }
 
     /**
-     * @param array $responseArray
+     * @return stdClass
      */
-    public function setResponseArray(array $responseArray)
+    public function getResponseJson()
     {
-        $this->responseArray = $responseArray;
-    }
-
-    /**
-     * @return array
-     */
-    public function getResponseArray()
-    {
-        return $this->responseArray;
+        return $this->responseJson;
     }
 }

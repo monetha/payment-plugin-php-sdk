@@ -11,7 +11,7 @@ namespace Monetha\Request;
 
 use Monetha\Payload\AbstractPayload;
 use Monetha\Response\AbstractResponse;
-use Monetha\Response\Error;
+use Monetha\Response\Exception\ApiException;
 
 abstract class AbstractRequest
 {
@@ -64,7 +64,8 @@ abstract class AbstractRequest
     }
 
     /**
-     * @return AbstractResponse|Error
+     * @return AbstractResponse
+     * @throws ApiException
      */
     final public function send()
     {
@@ -102,51 +103,45 @@ abstract class AbstractRequest
         curl_close($chSign);
 
         if ($error) {
-            $errorResponse = new Error();
-            $errorResponse->setStatusCode($responseCode);
-            $errorResponse->setResponseArray([
-                'code' => $responseCode,
-                'message' => sprintf(
-                    'Error: %s, Raw response: %s',
-                    $error,
-                    $res
-                ),
-            ]);
+            $apiException = new ApiException();
+            $apiException->setApiStatusCode($responseCode);
+            $apiException->setApiErrorCode($responseCode);
+            $apiException->setApiErrorMessage(sprintf(
+                'Error: %s, Raw response: %s',
+                $error,
+                $res
+            ));
 
-            return $errorResponse;
+            throw $apiException;
         }
 
         $resJson = json_decode($res);
 
-
-        if (json_last_error()) {
+        if (json_last_error() || !($resJson instanceof \stdClass)) {
             $jsonErrorMessage = json_last_error_msg();
-            $jsonError = new Error();
-            $jsonError->setStatusCode($responseCode);
-            $jsonError->setResponseArray([
-                'code' => 'INVALID_JSON',
-                'message' => sprintf(
-                    'Error: %s, Raw response: %s',
-                    $jsonErrorMessage,
-                    $res
-                ),
-            ]);
 
-            return $jsonError;
+            $apiException = new ApiException();
+            $apiException->setApiStatusCode($responseCode);
+            $apiException->setApiErrorCode('INVALID_JSON');
+            $apiException->setApiErrorMessage(sprintf(
+                'Error: %s, Raw response: %s',
+                $jsonErrorMessage,
+                $res
+            ));
+
+            throw $apiException;
         }
 
-        if ($responseCode >= 300 && $resJson instanceof \stdClass) {
-            $errorResponse = new Error();
-            $errorResponse->setStatusCode($responseCode);
-            $errorResponse->setResponseArray([
-                'code' => !empty($resJson->code) ? $resJson->code : $responseCode,
-                'message' => !empty($resJson->message) ? $resJson->message : $res,
-            ]);
+        if ($responseCode >= 300) {
+            $apiException = new ApiException();
+            $apiException->setApiStatusCode($responseCode);
+            $apiException->setApiErrorCode(!empty($resJson->code) ? $resJson->code : $responseCode);
+            $apiException->setApiErrorMessage(!empty($resJson->message) ? $resJson->message : $res);
 
-            return $errorResponse;
+            throw $apiException;
         }
 
-        $this->response->setResponseArray((array) $resJson);
+        $this->response->setResponseJson($resJson);
 
         return $this->response;
     }

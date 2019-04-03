@@ -23,20 +23,20 @@ class ExecuteOffer extends AbstractResponse
 
     /**
      * ExecuteOffer constructor.
-     * @param array $dataResponseItem
+     * @param stdClass $responseJson
      * @throws OrderNotFoundException
      */
-    public function setResponseArray(array $dataResponseItem)
+    public function setResponseJson(stdClass $responseJson)
     {
-        parent::setResponseArray($dataResponseItem);
+        parent::setResponseJson($responseJson);
 
-        if (empty($dataResponseItem['order'])) {
+        if (empty($responseJson->order)) {
             throw new OrderNotFoundException(
-                'Order not found, response: ' . json_encode($dataResponseItem)
+                'Order not found, response: ' . json_encode($responseJson)
             );
         }
 
-        $this->order = $dataResponseItem['order'];
+        $this->order = $responseJson->order;
     }
 
     /**
