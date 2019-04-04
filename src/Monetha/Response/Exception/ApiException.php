@@ -30,11 +30,6 @@ class ApiException extends \Exception
      */
     private $apiErrorCode = '';
 
-    /**
-     * @var string
-     */
-    private $apiErrorMessage = '';
-
     private $apiStatusCode;
 
     public function __construct(string $message = "", int $code = 0, Throwable $previous = null)
@@ -42,7 +37,6 @@ class ApiException extends \Exception
         parent::__construct($message, $code, $previous);
 
         $this->apiErrorCode = $code;
-        $this->apiErrorMessage = $message;
     }
 
     /**
@@ -54,27 +48,11 @@ class ApiException extends \Exception
     }
 
     /**
-     * @param string $apiErrorMessage
-     */
-    public function setApiErrorMessage($apiErrorMessage)
-    {
-        $this->apiErrorMessage = $apiErrorMessage;
-    }
-
-    /**
      * @return string
      */
     public function getApiErrorCode(): string
     {
         return $this->apiErrorCode;
-    }
-
-    /**
-     * @return string
-     */
-    public function getApiErrorMessage(): string
-    {
-        return $this->apiErrorMessage;
     }
 
     /**

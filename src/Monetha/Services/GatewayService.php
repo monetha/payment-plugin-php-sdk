@@ -44,6 +44,10 @@ class GatewayService
      */
     private $testMode;
 
+    /**
+     * GatewayService constructor.
+     * @param ConfigAdapterInterface $configAdapter
+     */
     public function __construct(ConfigAdapterInterface $configAdapter)
     {
         $this->merchantSecret = $configAdapter->getMerchantSecret();
@@ -94,6 +98,11 @@ class GatewayService
         return $integrationSecret == $this->merchantSecret;
     }
 
+    /**
+     * @param string $signature
+     * @param string $data
+     * @return bool
+     */
     public function validateSignature($signature, $data)
     {
         return $signature == base64_encode(hash_hmac('sha256', $data, $this->merchantSecret, true));
@@ -122,11 +131,18 @@ class GatewayService
         return null;
     }
 
+    /**
+     * @param string $str
+     * @return bool
+     */
     private function isJson($str) {
         $json = json_decode($str);
         return $json && $str != $json;
     }
 
+    /**
+     * @return string
+     */
     private function getApiUrl()
     {
         $apiUrl = ApiType::PROD;

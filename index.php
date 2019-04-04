@@ -192,27 +192,32 @@ $config = new Config(
 $gateway = new GatewayService($config);
 
 try {
+    // optional and could be called only when updating Monetha's API settings
     $gateway->validateApiKey();
 
+    // create an offer (before actual payment step)
     $createOfferResponse = $gateway->createOffer($order, $client);
     $token = $createOfferResponse->getToken();
 
+    // when pressing "Pay now"
     $executeOfferResponse = $gateway->executeOffer($token);
 
+    // getting payment page redirect URL
     $paymentUrl = $executeOfferResponse->getPaymentUrl();
+
+    // the rest information about deal
     $monethaOrder = $executeOfferResponse->getOrder();
 
 } catch(ApiException $e) {
     error_log(
         'Status code: ' . $e->getApiStatusCode() .
         ', error: ' . $e->getApiErrorCode() .
-        ', message: ' . $e->getApiErrorMessage()
+        ', message: ' . $e->getMessage()
     );
 
-//    var_dump($e);
     echo $e->getFriendlyMessage();
 
     return;
 }
 
-echo json_encode($monethaOrder, JSON_PRETTY_PRINT);
+header('Location: ' . $paymentUrl);

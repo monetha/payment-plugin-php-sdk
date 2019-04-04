@@ -103,14 +103,13 @@ abstract class AbstractRequest
         curl_close($chSign);
 
         if ($error) {
-            $apiException = new ApiException();
-            $apiException->setApiStatusCode($responseCode);
-            $apiException->setApiErrorCode($responseCode);
-            $apiException->setApiErrorMessage(sprintf(
+            $apiException = new ApiException(sprintf(
                 'Error: %s, Raw response: %s',
                 $error,
                 $res
             ));
+            $apiException->setApiStatusCode($responseCode);
+            $apiException->setApiErrorCode($responseCode);
 
             throw $apiException;
         }
@@ -120,23 +119,21 @@ abstract class AbstractRequest
         if (json_last_error() || !($resJson instanceof \stdClass)) {
             $jsonErrorMessage = json_last_error_msg();
 
-            $apiException = new ApiException();
-            $apiException->setApiStatusCode($responseCode);
-            $apiException->setApiErrorCode('INVALID_JSON');
-            $apiException->setApiErrorMessage(sprintf(
+            $apiException = new ApiException(sprintf(
                 'Error: %s, Raw response: %s',
                 $jsonErrorMessage,
                 $res
             ));
+            $apiException->setApiStatusCode($responseCode);
+            $apiException->setApiErrorCode('INVALID_JSON');
 
             throw $apiException;
         }
 
         if ($responseCode >= 300) {
-            $apiException = new ApiException();
+            $apiException = new ApiException(!empty($resJson->message) ? $resJson->message : $res);
             $apiException->setApiStatusCode($responseCode);
             $apiException->setApiErrorCode(!empty($resJson->code) ? $resJson->code : $responseCode);
-            $apiException->setApiErrorMessage(!empty($resJson->message) ? $resJson->message : $res);
 
             throw $apiException;
         }
