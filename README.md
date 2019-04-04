@@ -12,6 +12,25 @@ composer config repositories.monetha/payment-plugin-php-sdk vcs https://gitlab.c
 composer require monetha/payment-plugin-php-sdk
 ```
 
+## Documentation
+
+In order to start integration you have to just implement 4 interfaces:
+
+1. `Monetha/Adapter/ConfigAdapterInterface.php` - to retrieve/validate API key etc.
+2. `Monetha/Adapter/ClientAdapterInterface.php` returns buyer information
+3. `Monetha/Adapter/OrderAdapterInterface.php` provides order information
+4. `Monetha/Adapter/InterceptorInterface.php` is a single item from the order. 
+
+### Class diagram
+
+### Sequence diagram
+
+#### Creating an order
+
+#### Canceling an order
+
+### Webhooks
+
 ## Simple example
 
 ```php
@@ -52,25 +71,8 @@ header('Location: ' . $paymentUrl);
 
 Full examples is inside `/index.php`.
 
-## Documentation
-
-in order to start integration you have to just implement 4 interfaces:
-
-1. `Monetha/Adapter/ConfigAdapterInterface.php` - to retrieve/validate API key etc.
-2. `Monetha/Adapter/ClientAdapterInterface.php` returns buyer information
-3. `Monetha/Adapter/OrderAdapterInterface.php` provides order information
-4. `Monetha/Adapter/InterceptorInterface.php` is a single item from the order. 
-
-## Tests
-
-
-
 ## Security
 
-
-
 ## Contribution
-
-
 
 ## Changelog
