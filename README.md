@@ -4,9 +4,13 @@ Use the Monetha plugin to start accepting payments in your e-commerce store.
 
 ## Installation
 
-`composer config repositories.monetha/payment-plugin-php-sdk vcs https://gitlab.com/monetha/payment-plugin-php-sdk.git`
+```sh
+composer config repositories.monetha/payment-plugin-php-sdk vcs https://gitlab.com/monetha/payment-plugin-php-sdk.git
+```
 
-`composer require monetha/payment-plugin-php-sdk`
+```sh
+composer require monetha/payment-plugin-php-sdk
+```
 
 ## Simple example
 
