@@ -8,17 +8,15 @@
 
 namespace Monetha\Payload;
 
-use Monetha\Response\CreateOffer as CreateOfferResponse;
-
 class ExecuteOffer extends AbstractPayload
 {
     /**
      * ExecuteOffer constructor.
-     * @param CreateOfferResponse $createOfferResponse
+     * @param string $token
      */
-    public function __construct(CreateOfferResponse $createOfferResponse)
+    public function __construct($token)
     {
-        $payload = ['token' => $createOfferResponse->getToken()];
+        $payload = ['token' => $token];
 
         $this->setPayload($payload);
     }

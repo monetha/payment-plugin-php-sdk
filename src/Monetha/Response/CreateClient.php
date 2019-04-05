@@ -10,6 +10,7 @@ namespace Monetha\Response;
 
 
 use Monetha\Response\Exception\ClientIdNotFoundException;
+use stdClass;
 
 class CreateClient extends AbstractResponse
 {
@@ -20,20 +21,20 @@ class CreateClient extends AbstractResponse
 
     /**
      * CreateClient constructor.
-     * @param array $dataResponseItem
+     * @param stdClass $responseJson
      * @throws ClientIdNotFoundException
      */
-    public function setResponseArray(array $dataResponseItem)
+    public function setResponseJson(stdClass $responseJson)
     {
-        parent::setResponseArray($dataResponseItem);
+        parent::setResponseJson($responseJson);
 
-        if (empty($dataResponseItem['client_id'])) {
+        if (empty($responseJson->client_id)) {
             throw new ClientIdNotFoundException(
-                'Client id not found, response: ' . json_encode($dataResponseItem)
+                'Client id not found, response: ' . json_encode($responseJson)
             );
         }
 
-        $this->clientId = $dataResponseItem['client_id'];
+        $this->clientId = $responseJson->client_id;
     }
 
     /**

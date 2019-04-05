@@ -55,9 +55,18 @@ abstract class WebHookAdapterAbstract implements WebHookAdapterInterface {
         }
     }
 
+    /**
+     * @return bool
+     */
     abstract public function cancel($note);
 
+    /**
+     * @return bool
+     */
     abstract public function finalize();
 
+    /**
+     * @return bool
+     */
     abstract public function authorize();
 }
