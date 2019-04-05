@@ -220,4 +220,28 @@ try {
     return;
 }
 
-header('Location: ' . $paymentUrl);
+//header('Location: ' . $paymentUrl);
+
+//echo json_encode($monethaOrder, JSON_PRETTY_PRINT);
+
+// if you want to cancel the order
+try {
+    $monethaOrderId = $executeOfferResponse->getOrderId();
+    $jsonResponse = $gateway->cancelExternalOrder($monethaOrderId)->getResponseJson();
+//    var_dump($jsonResponse->order_status->name); // == 'OrderCanceled'
+
+    // do the rest actions on shop side
+
+} catch(ApiException $e) {
+    error_log(
+        'Status code: ' . $e->getApiStatusCode() .
+        ', error: ' . $e->getApiErrorCode() .
+        ', message: ' . $e->getMessage()
+    );
+
+    echo 'Cannot cancel the order. ' . $e->getFriendlyMessage();
+
+    return;
+}
+
+echo 'Order cancelled.';
