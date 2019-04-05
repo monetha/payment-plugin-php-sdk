@@ -100,8 +100,8 @@ Monetha's Payment Gateway supports webhooks during such events on it's side like
 
 All you need to do in order to support Webhooks' receiving - just extend `Monetha\Adapter\WebHookAdapterAbstract` class by implementing 3 appropriate abstract methods:
 * `cancel()` - what to do in case if order was canceled through mth-api call
-* `finalize()` - ...order was paid
-* `authorize()` - ...order was paid by card
+* `finalize()` - ...order was paid on the payment page where used was redirected
+* `authorize()` - ...order was paid by card (authorization was successful)
 
 ## Security
 
