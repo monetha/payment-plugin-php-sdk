@@ -32,7 +32,7 @@ class ApiException extends \Exception
 
     private $apiStatusCode;
 
-    public function __construct(string $message = "", int $code = 0, Throwable $previous = null)
+    public function __construct($message = "", $code = 0, Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
 
@@ -50,7 +50,7 @@ class ApiException extends \Exception
     /**
      * @return string
      */
-    public function getApiErrorCode(): string
+    public function getApiErrorCode()
     {
         return $this->apiErrorCode;
     }
@@ -75,7 +75,7 @@ class ApiException extends \Exception
     /**
      * @param mixed $apiStatusCode
      */
-    public function setApiStatusCode($apiStatusCode): void
+    public function setApiStatusCode($apiStatusCode)
     {
         $this->apiStatusCode = $apiStatusCode;
     }
