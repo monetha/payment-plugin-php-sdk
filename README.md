@@ -98,10 +98,40 @@ Monetha's Payment Gateway supports webhooks during such events on it's side like
 * order.finalized
 * order.money_authorized
 
-All you need to do in order to support Webhooks' receiving - just extend `Monetha\Adapter\WebHookAdapterAbstract` class by implementing 3 appropriate abstract methods:
+In order to support Webhooks' receiving you have to
+
+1. Extend `Monetha\Adapter\WebHookAdapterAbstract` class by implementing 3 appropriate abstract methods:
 * `cancel()` - what to do in case if order was canceled through mth-api call
 * `finalize()` - ...order was paid on the payment page where used was redirected
 * `authorize()` - ...order was paid by card (authorization was successful)
+
+2. Your class that implements `Monetha/Adapter/OrderAdapterInterface.php` needs to implement`Monetha\Adapter\CallbackUrlInterface` as well (it's only method should return the endpoint URL where Monetha will send JSON data in case of the events above).
+
+3. Process incoming request in the way below:
+```php
+$bodyString = file_get_contents('php://input');
+$signature = !empty($_SERVER['HTTP_MTH_SIGNATURE']) ? $_SERVER['HTTP_MTH_SIGNATURE'] : '';
+try {
+    // signature will be checked to ensure that sender is authorized
+    // processWebHook is base a class method,
+    // it will call your finalize, authorize or cancel implementation,
+    // (depends on the event)
+    $result = $this->processWebHook($this->config, $bodyString, $signature);
+} catch(ValidationException $e) {
+    // in case of signature is invalid or event is unsupported
+    error_log($e->getMessage());
+    $result = false;
+}
+
+if ($result) {
+    echo 'OK'; // or just send 'No Content' status code like http_response_code(204);
+} else {
+    // Send appropriate code to Monetha in case of any error
+    http_response_code(500);
+}
+```
+
+Consider full example at `index.php` file.
 
 ## Security
 
