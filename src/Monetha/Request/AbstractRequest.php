@@ -77,8 +77,10 @@ abstract class AbstractRequest
     private function getResponse(AbstractPayload $payload) {
         // TODO: timeout
 
+        $requestUrl = $this->apiUrlPrefix . $this->uri;
+
         $options = [
-            CURLOPT_URL => $this->apiUrlPrefix . $this->uri,
+            CURLOPT_URL => $requestUrl,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HTTPHEADER =>  [
                 'Content-Type: application/json',
@@ -104,8 +106,10 @@ abstract class AbstractRequest
 
         if ($error) {
             $apiException = new ApiException(sprintf(
-                'Error: %s, Raw response: %s',
+                'Error: %s, request url = %s, raw request = %s, raw response: %s',
                 $error,
+                $requestUrl,
+                $body,
                 $res
             ));
             $apiException->setApiStatusCode($responseCode);
@@ -120,8 +124,10 @@ abstract class AbstractRequest
             $jsonErrorMessage = json_last_error_msg();
 
             $apiException = new ApiException(sprintf(
-                'Error: %s, Raw response: %s',
+                'Error: %s, request url = %s, raw request = %s, raw response: %s',
                 $jsonErrorMessage,
+                $requestUrl,
+                $body,
                 $res
             ));
             $apiException->setApiStatusCode($responseCode);
@@ -131,7 +137,12 @@ abstract class AbstractRequest
         }
 
         if ($responseCode >= 300) {
-            $apiException = new ApiException(!empty($resJson->message) ? $resJson->message : $res);
+            $apiException = new ApiException(sprintf(
+                'Error: %s, request url = %s, raw request = %s',
+                !empty($resJson->message) ? $resJson->message : $res,
+                $requestUrl,
+                $body
+            ));
             $apiException->setApiStatusCode($responseCode);
             $apiException->setApiErrorCode(!empty($resJson->code) ? $resJson->code : $responseCode);
 
