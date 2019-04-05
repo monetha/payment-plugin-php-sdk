@@ -58,7 +58,7 @@ class GatewayService
     /**
      * @param OrderAdapterInterface $orderAdapter
      * @param ClientAdapterInterface $clientAdapter
-     * @return AbstractResponse|\Monetha\Response\ExecuteOffer
+     * @return \Monetha\Response\ExecuteOffer
      * @throws ApiException
      */
     public function getExecuteOfferResponse(OrderAdapterInterface $orderAdapter, ClientAdapterInterface $clientAdapter)
