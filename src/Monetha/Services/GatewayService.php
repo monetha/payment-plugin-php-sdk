@@ -17,7 +17,6 @@ use Monetha\Request\CreateClient;
 use Monetha\Request\CreateOffer;
 use Monetha\Request\ExecuteOffer;
 use Monetha\Request\ValidateApiKey;
-use Monetha\Response\AbstractResponse;
 use Monetha\Response\CreateOffer as CreateOfferResponse;
 use Monetha\Response\Exception\ApiException;
 use Monetha\Response\Exception\ClientIdNotFoundException;
