@@ -186,10 +186,18 @@ $orderItem = [
 
 $order = new Order(42, $orderItem);
 
+$apiKey = 'Please register in order to acquire'; // https://www.monetha.io/e-commerce
+$merchantSecret = 'MONETHA_SANDBOX_SECRET'; // being provided with an API key above
+$testMode = true; // if true all payments will be executed on Ropsten testnet
+
+// by using Monetha\ConfigAdapterTrait jnside Config class
+// and setting those private variables from arguments,
+// you\'re actually implementing Monetha\Adapter\ConfigAdapterInterface
+// which is required to construct Monetha\Services\GatewayService below
 $config = new Config(
-    'MONETHA_SANDBOX_SECRET',
-    'MONETHA_SANDBOX_KEY',
-    true
+    $merchantSecret,
+    $apiKey,
+    $testMode
 );
 
 $gateway = new GatewayService($config);
@@ -223,15 +231,13 @@ try {
     return;
 }
 
-//header('Location: ' . $paymentUrl);
+header('Location: ' . $paymentUrl);
 
-//echo json_encode($monethaOrder, JSON_PRETTY_PRINT);
-
-// if you want to cancel the order
+// if then you want to cancel the order for some reason
 try {
     $monethaOrderId = $executeOfferResponse->getOrderId();
     $jsonResponse = $gateway->cancelExternalOrder($monethaOrderId)->getResponseJson();
-//    var_dump($jsonResponse->order_status->name); // == 'OrderCanceled'
+//   $jsonResponse->order_status->name == 'OrderCanceled'
 
     // do the rest actions on shop side
 

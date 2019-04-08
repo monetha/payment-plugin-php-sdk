@@ -1,0 +1,17 @@
+@startuml
+
+Shop -> MonethaAPI: createOffer(order, client)
+MonethaAPI --> Shop: token
+
+Shop -> MonethaAPI: executeOffer(token)
+MonethaAPI --> Shop: monethaOrderId, paymentUrl
+
+Shop --> PaymentPage: paymentUrl
+
+Shop -> MonethaAPI: cancelExternalOrder(monethaOrderId)
+
+ShopWebHooksListener <-- PaymentPage: finalize()
+ShopWebHooksListener <-- PaymentPage: authorize()
+ShopWebHooksListener <-- MonethaAPI: cancel()
+
+@enduml

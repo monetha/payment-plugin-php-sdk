@@ -34,6 +34,22 @@ In order to start integration you have to just implement 4 interfaces:
 #### Creating an order
 
 ```php
+// Full example is inside `/index.php`.
+
+$apiKey = 'Please register in order to acquire'; // https://www.monetha.io/e-commerce
+$merchantSecret = 'MONETHA_SANDBOX_SECRET'; // being provided with an API key above
+$testMode = true; // if true all payments will be executed on Ropsten testnet
+
+// by using Monetha\ConfigAdapterTrait jnside Config class
+// and setting those private variables from arguments,
+// you\'re actually implementing Monetha\Adapter\ConfigAdapterInterface
+// which is required to construct Monetha\Services\GatewayService below
+$config = new Config(
+    $merchantSecret,
+    $apiKey,
+    $testMode
+);
+
 $gateway = new Monetha\Services\GatewayService($config);
 
 try {
@@ -69,14 +85,13 @@ try {
 header('Location: ' . $paymentUrl);
 ```
 
-Full examples is inside `/index.php`.
-
 #### Canceling an order
 ```php
+// if then you want to cancel the order for some reason
 try {
     $monethaOrderId = $executeOfferResponse->getOrderId();
     $jsonResponse = $gateway->cancelExternalOrder($monethaOrderId)->getResponseJson();
-//    var_dump($jsonResponse->order_status->name); // == 'OrderCanceled'
+//   $jsonResponse->order_status->name == 'OrderCanceled'
 
     // do the rest actions on shop side
 
@@ -117,8 +132,8 @@ $bodyString = file_get_contents('php://input');
 $signature = !empty($_SERVER['HTTP_MTH_SIGNATURE']) ? $_SERVER['HTTP_MTH_SIGNATURE'] : '';
 try {
     // signature will be checked to ensure that sender is authorized
-    // processWebHook is base a class method,
-    // it will call your finalize, authorize or cancel implementation,
+    // processWebHook() is base a class method which encapsulates calls
+    // to your finalize(), authorize() and cancel() implementations,
     // (depends on the event)
     $result = $this->processWebHook($this->config, $bodyString, $signature);
 } catch(ValidationException $e) {
@@ -130,7 +145,7 @@ try {
 if ($result) {
     echo 'OK'; // or just send 'No Content' status code like http_response_code(204);
 } else {
-    // Send appropriate code to Monetha in case of any error
+    // Send appropriate code to Monetha in case of any error occurred on e-shop side
     http_response_code(500);
 }
 ```
