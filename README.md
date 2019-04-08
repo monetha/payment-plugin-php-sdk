@@ -23,6 +23,8 @@ In order to start integration you have to just implement 4 interfaces:
 
 ### Class diagram
 
+![UML](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "Logo Title Text 1")
+
 ### Sequence diagram
 
 ## Simple example
