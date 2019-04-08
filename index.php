@@ -186,14 +186,20 @@ $orderItem = [
 
 $order = new Order(42, $orderItem);
 
-$apiKey = 'Please register in order to acquire'; // https://www.monetha.io/e-commerce
-$merchantSecret = 'MONETHA_SANDBOX_SECRET'; // being provided with an API key above
-$testMode = true; // if true all payments will be executed on Ropsten testnet
+// Sign up at Monetha to become a Merchant - https://help.monetha.io/hc/en-us/categories/360000271031#article=Preliminary-steps
+// After completing the sign up you visit your Merchant Cabinet
+// Payment > Payment settings and copy paste the following
+$merchantSecret = 'MONETHA_MERCHANT_SECRET'; 
+$apiKey = 'MONETHA_MERCHANT_API_TOKEN'; 
 
-// by using Monetha\ConfigAdapterTrait jnside Config class
+// testMode - is a flag describing that shop will be run in Ropsten.
+// Meaning that no true crypto currency will be used
+$testMode = true; 
+
+// by using Monetha\ConfigAdapterTrait inside Config class
 // and setting those private variables from arguments,
-// you\'re actually implementing Monetha\Adapter\ConfigAdapterInterface
-// which is required to construct Monetha\Services\GatewayService below
+// you are actually implementing Monetha\Adapter\ConfigAdapterInterface
+// which is required to construct Monetha\Services\GatewayService
 $config = new Config(
     $merchantSecret,
     $apiKey,
@@ -206,17 +212,25 @@ try {
     // optional and could be called only when updating Monetha's API settings
     $gateway->validateApiKey();
 
-    // create an offer (before actual payment step)
+    // Prepare an Offer by signing the Order information
+    // This information will be used during Order execution
+    // You might need to repeat this step if your order information is updated
+    // It is advised to execute this API call on a Checkout page
     $createOfferResponse = $gateway->createOffer($order, $client);
     $token = $createOfferResponse->getToken();
 
-    // when pressing "Pay now"
+    // Execute the signed Offer. It is best to execute following method 
+    // on “Pay now” button press
     $executeOfferResponse = $gateway->executeOffer($token);
 
-    // getting payment page redirect URL
+    // After an Order was executed an E-shop must redirect a user
+    // to payment page. A payment url is unique for each order 
+    // and can be retrieved as follows
     $paymentUrl = $executeOfferResponse->getPaymentUrl();
 
-    // the rest information about deal
+    // It is best to retrieve and store a back reference to 
+    // Monetha Order. You can achieve that by reading the response payload
+    // of Order execution call
     $monethaOrder = $executeOfferResponse->getOrder();
 
 } catch(ApiException $e) {
@@ -233,13 +247,14 @@ try {
 
 header('Location: ' . $paymentUrl);
 
-// if then you want to cancel the order for some reason
+// Order cancellation example 
 try {
     $monethaOrderId = $executeOfferResponse->getOrderId();
     $jsonResponse = $gateway->cancelExternalOrder($monethaOrderId)->getResponseJson();
-//   $jsonResponse->order_status->name == 'OrderCanceled'
-
-    // do the rest actions on shop side
+    if ($jsonResponse->order_status->name == 'OrderCanceled') {
+        // TODO: Make any shop specific actions
+        echo 'Order cancelled.';
+    }
 
 } catch(ApiException $e) {
     error_log(
@@ -252,9 +267,6 @@ try {
 
     return;
 }
-
-echo 'Order cancelled.';
-
 
 //
 // WebHooks example
@@ -320,27 +332,29 @@ class WebHooksProcessor extends WebHookAdapterAbstract {
     }
 
     /**
-     * Call this method by receiving JSON payload sent by Monetha's Payment Gateway
+     * Call this method after receiving JSON payload sent by Monetha's Payment Gateway
      */
     public function monethaWebHookHandler() {
         $bodyString = file_get_contents('php://input');
         $signature = !empty($_SERVER['HTTP_MTH_SIGNATURE']) ? $_SERVER['HTTP_MTH_SIGNATURE'] : '';
         try {
-            // signature will be checked to ensure that sender is authorized
-            // processWebHook is base a class method,
-            // it will call your finalize, authorize or cancel implementation,
-            // (depends on the event)
+            // To ensure that Monetha sent the webhook and no one else Monetha sends a
+            // MTH-SIGNATURE header together with the webhook payload
+            // processWebHook() is base a class method handling 
+            // the validation of the signature and will call
+            // finalize, authorize or cancel implementation depending on the event type
             $result = $this->processWebHook($this->config, $bodyString, $signature);
         } catch(ValidationException $e) {
-            // in case of signature is invalid or event is unsupported
+            // Exception is thrown in case of signature is invalid or event is unsupported
             error_log($e->getMessage());
             $result = false;
         }
 
         if ($result) {
-            echo 'OK'; // or just send 'No Content' status code like http_response_code(204);
+            // Monetha is expecting either status code 200 or 204
+            http_response_code(204); 
         } else {
-            // Send appropriate code to Monetha in case of any error
+            // Monetha is expecting a status code 500 in case of an error
             http_response_code(500);
         }
     }
