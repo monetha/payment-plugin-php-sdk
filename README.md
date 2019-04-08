@@ -23,9 +23,11 @@ In order to start integration you have to just implement 4 interfaces:
 
 ### Class diagram
 
-![UML](payment-plugin-php-sdk.png "Payment Plugin PHP SDK UML diagram")
+![UML](payment-plugin-php-sdk.png "UML diagram")
 
 ### Sequence diagram
+
+![UML](workflow.png "Workflow")
 
 ## Simple example
 
