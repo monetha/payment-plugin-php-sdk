@@ -23,7 +23,7 @@ In order to start integration you have to just implement 4 interfaces:
 
 ### Class diagram
 
-![UML](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "Logo Title Text 1")
+![UML](payment-plugin-php-sdk.png "Payment Plugin PHP SDK UML diagram")
 
 ### Sequence diagram
 
