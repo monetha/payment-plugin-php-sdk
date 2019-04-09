@@ -9,10 +9,9 @@ Use the Monetha plugin to start accepting payments in your e-commerce store.
 - [Simple example](#simple-example)
   - [Creating an order](#creating-an-order)
   - [Canceling an order](#canceling-an-order)
-    - [Webhooks](#webhooks)
+  - [Handling webhook requests](#handling-webhook-requests)
 - [Security](#security)
 - [Contribution](#contribution)
-- [Changelog](#changelog)
 
 ## Installation
 
@@ -137,20 +136,21 @@ try {
 }
 ```
 
-#### Webhooks
+### Handling webhook requests
 
 Monetha's Payment Gateway triggers e-shop webhook url in order to sync order status between systems. The following events trigger a webhook:
 
-* order.canceled
-* order.finalized
-* order.money_authorized
+- order.canceled
+- order.finalized
+- order.money_authorized
 
-In order to handle Webhook you have to
+In order to handle the Webhook you have to
 
 1. Extend `Monetha\Adapter\WebHookAdapterAbstract` class by implementing 3 appropriate abstract methods:
-* `cancel()` - what to do in case if order was canceled through mth-api call
-* `finalize()` - ...order was paid on the payment page where used was redirected
-* `authorize()` - ...order was paid by card (authorization was successful)
+
+- `cancel()` - what to do in case if order was canceled through mth-api call
+- `finalize()` - ...order was paid on the payment page where used was redirected
+- `authorize()` - ...order was paid by card (authorization was successful)
 
 2. Your class that implements `Monetha/Adapter/OrderAdapterInterface.php` needs to implement`Monetha\Adapter\CallbackUrlInterface` as well (it's only method should return the endpoint URL where Monetha will send JSON data in case of the events above).
 
@@ -160,7 +160,7 @@ In order to handle Webhook you have to
 $bodyString = file_get_contents('php://input');
 $signature = !empty($_SERVER['HTTP_MTH_SIGNATURE']) ? $_SERVER['HTTP_MTH_SIGNATURE'] : '';
 try {
-    // To ensure that Monetha sent the webhook and no one else Monetha sends a
+    // To ensure that Monetha sent the webhook it adds
     // MTH-SIGNATURE header together with the webhook payload
     // processWebHook() is base a class method handling
     // the validation of the signature and will call
@@ -174,17 +174,19 @@ try {
 
 if ($result) {
     // Monetha is expecting either status code 200 or 204
-    http_response_code(204); 
+    http_response_code(204);
 } else {
     // Monetha is expecting a status code 500 in case of an error
     http_response_code(500);
 }
 ```
 
-Full example of the code can be found in /index.php.
+Full example of the code can be found in [/index.php](/index.php).
 
 ## Security
 
+Please disclose any vulnerabilities found responsibly - report any security problems found to the maintainers privately.
+
 ## Contribution
 
-## Changelog
+Please submit bug reports, suggestions and pull requests to the [GitHub issue tracker](https://github.com/monetha/payment-plugin-php-sdk/issues/new).
