@@ -1,0 +1,36 @@
+@startuml
+hide footbox
+
+
+actor "User" as user
+participant "E-Shop" as shop
+participant "Monetha API" as gatewayapi
+participant "Payment page" as gateway
+
+user -> shop: User came to checkout page
+
+shop -> gatewayapi: Monetha.Services.GatewayService.createOffer( order, client )
+activate gatewayapi
+gatewayapi --> shop: Monetha.Response.CreateOffer
+deactivate gatewayapi
+
+user -> shop: User pressed place order
+activate shop
+
+shop -> gatewayapi: Monetha.Services.GatewayService.executeOffer( Monetha.Response.CreateOffer.token )
+activate gatewayapi
+gatewayapi --> shop: Monetha.Response.ExecuteOffer
+deactivate gatewayapi
+deactivate shop
+
+activate gateway
+shop -> gateway: redirect user to Monetha.Response.ExecuteOffer.paymentURL
+
+
+... 1. User select to pay by FIAT or Crypto depending on Merchant configuraiton ...
+... 2. Provides information necessary for a payment ...
+
+shop <- gateway: WebHookAdapter.finalize()
+deactivate gateway
+
+@enduml

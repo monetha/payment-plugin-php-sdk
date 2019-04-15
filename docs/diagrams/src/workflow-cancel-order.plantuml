@@ -1,0 +1,13 @@
+@startuml
+
+hide footbox
+
+participant "E-Shop" as shop
+participant "Monetha API" as gatewayapi
+
+activate gatewayapi
+shop -> gatewayapi: Monetha.Services.GatewayService.cancelExternalOrder(monethaOrderId)
+gatewayapi --> shop: Monetha.Response.CancelOrder
+deactivate shop
+
+@enduml

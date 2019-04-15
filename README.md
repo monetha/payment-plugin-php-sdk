@@ -5,8 +5,12 @@ Use the Monetha plugin to start accepting payments in your e-commerce store.
 - [Installation](#installation)
 - [Documentation](#documentation)
   - [Class diagram](#class-diagram)
-  - [Sequence diagram](#sequence-diagram)
-- [Simple example](#simple-example)
+    - [Monetha.Services](#monethaservices)
+    - [Monetha.Adapter](#monethaadapter)
+  - [Usage scenario](#usage-scenario)
+    - [Purchase flow](#purchase-flow)
+    - [Cancel flow](#cancel-flow)
+- [Example implementation](#example-implementation)
   - [Creating an order](#creating-an-order)
   - [Canceling an order](#canceling-an-order)
   - [Handling webhook requests](#handling-webhook-requests)
@@ -25,22 +29,34 @@ composer require monetha/payment-plugin-php-sdk
 
 ## Documentation
 
-In order to start integration you have to just implement 4 interfaces:
+In order to start integration you have to implement 4 interfaces:
 
 1. `Monetha/Adapter/ConfigAdapterInterface.php` - to retrieve/validate API key etc.
 2. `Monetha/Adapter/ClientAdapterInterface.php` returns buyer information
 3. `Monetha/Adapter/OrderAdapterInterface.php` provides order information
-4. `Monetha/Adapter/InterceptorInterface.php` is a single item from the order. 
+4. `Monetha/Adapter/InterceptorInterface.php` is a single item from the order.
 
 ### Class diagram
 
-![UML](example/payment-plugin-php-sdk.png "UML diagram")
+#### Monetha.Services
 
-### Sequence diagram
+![monetha-gateway-service-class](docs/diagrams/out/monetha-gateway-service-class.png)
 
-![UML](example/workflow.png "Workflow")
+#### Monetha.Adapter
 
-## Simple example
+![adapter-interface](docs/diagrams/out/adapter-interface.png)
+
+### Usage scenario
+
+#### Purchase flow
+
+![UML](docs/diagrams/out/workflow-purchase.png)
+
+#### Cancel flow
+
+![UML](docs/diagrams/out/workflow-cancel-order.png)
+
+## Example implementation
 
 ### Creating an order
 
@@ -51,12 +67,12 @@ Full example of the code below can be found in [/index.php](/index.php).
 // Sign up at Monetha to become a Merchant - https://help.monetha.io/hc/en-us/categories/360000271031#article=Preliminary-steps
 // After completing the sign up you visit your Merchant Cabinet
 // Payment > Payment settings and copy paste the following
-$merchantSecret = 'MONETHA_MERCHANT_SECRET'; 
-$apiKey = 'MONETHA_MERCHANT_API_TOKEN'; 
+$merchantSecret = 'MONETHA_MERCHANT_SECRET';
+$apiKey = 'MONETHA_MERCHANT_API_TOKEN';
 
 // testMode - is a flag describing that shop will be run in Ropsten.
 // Meaning that no true crypto currency will be used
-$testMode = true; 
+$testMode = true;
 
 // by using Monetha\ConfigAdapterTrait inside Config class
 // and setting those private variables from arguments,
@@ -146,7 +162,7 @@ Monetha's Payment Gateway triggers e-shop webhook url in order to sync order sta
 
 In order to handle the Webhook you have to
 
-1. Extend `Monetha\Adapter\WebHookAdapterAbstract` class by implementing 3 appropriate abstract methods:
+1. Extend `Monetha\Adapter\WebHookAdapterAbstract` class by implementing 3 abstract methods:
 
 - `cancel()` - what to do in case if order was canceled through mth-api call
 - `finalize()` - ...order was paid on the payment page where used was redirected
@@ -180,6 +196,9 @@ if ($result) {
     http_response_code(500);
 }
 ```
+
+4. Make the webhook handler available via URL and provide it as `callback_url` in `Monetha\Services\MonethaGateway.createOffer()`
+
 
 Full example of the code can be found in [/index.php](/index.php).
 

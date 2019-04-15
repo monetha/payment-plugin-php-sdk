@@ -1,0 +1,20 @@
+@startuml
+
+class Monetha.Services.GatewayService {
+    -merchantSecret : string
+    -mthApiKey : string
+    -testMode : string
+    +__construct(configAdapter : Monetha.Adapter.ConfigAdapterInterface)
+    +validateApiKey() : bool
+    +validateSignature(signature : string, data : string) : bool
+    +cancelExternalOrder(orderId : int) : Monetha.Response.CancelOrder
+    +createOffer(orderAdapter, clientAdapter) : Monetha.Response.CreateOffer
+    +executeOffer(token: string) : Monetha.Response.ExecuteOffer
+    +getExecuteOfferResponse(orderAdapter, clientAdapter) : Monetha.Response.ExecuteOffer
+    -getMerchantId() : ?int
+    -isJson(str : string) : bool
+    -getApiUrl() : string
+    -createClient(clientAdapter) : Monetha.Response.CreateClient
+}
+
+@enduml
