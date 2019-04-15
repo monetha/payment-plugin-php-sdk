@@ -197,9 +197,6 @@ if ($result) {
 }
 ```
 
-4. Make the webhook handler available via URL and provide it as `callback_url` in `Monetha\Services\MonethaGateway.createOffer()`
-
-
 Full example of the code can be found in [/index.php](/index.php).
 
 ## Security
