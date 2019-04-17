@@ -77,7 +77,6 @@ class CreateOffer extends AbstractPayload
                 'line_items' => $items
             ),
             'return_url' => $orderAdapter->getBaseUrl(),
-            'callback_url' => $orderAdapter->getBaseUrl(),
             'external_order_id' => (string) $orderId,
         );
 
