@@ -33,7 +33,7 @@ In order to start integration you have to implement 4 interfaces:
 
 1. `Monetha/Adapter/ConfigAdapterInterface.php` - to retrieve/validate API key etc.
 2. `Monetha/Adapter/ClientAdapterInterface.php` returns buyer information
-3. `Monetha/Adapter/OrderAdapterInterface.php` provides order information
+3. `Monetha/Adapter/OrderAdapterInterface.php` provides order information (`Monetha\Adapter\CallbackUrlInterface` implementation is optional for this class and is required only if Webhooks support is needed, see below)
 4. `Monetha/Adapter/InterceptorInterface.php` is a single item from the order.
 
 ### Class diagram
@@ -168,7 +168,7 @@ In order to handle the Webhook you have to
 - `finalize()` - ...order was paid on the payment page where used was redirected
 - `authorize()` - ...order was paid by card (authorization was successful)
 
-2. Your class that implements `Monetha/Adapter/OrderAdapterInterface.php` needs to implement`Monetha\Adapter\CallbackUrlInterface` as well (it's only method should return the endpoint URL where Monetha will send JSON data in case of the events above).
+2. Your class that implements `Monetha/Adapter/OrderAdapterInterface.php` needs to implement `Monetha\Adapter\CallbackUrlInterface` as well (it's only method should return the endpoint URL where Monetha will send JSON data in case of the events above).
 
 3. Process incoming request in the way below:
 
