@@ -38,7 +38,6 @@ class CreateOffer extends AbstractPayload
         $items = [];
         $cartItems = $orderAdapter->getItems();
 
-        $itemsPrice = 0;
         foreach ($cartItems as $item) {
             $price = round($item->getPrice(), 2);
             $quantity = $item->getQtyOrdered();
@@ -47,32 +46,17 @@ class CreateOffer extends AbstractPayload
                 'quantity' => (int) $quantity,
                 'amount_fiat' => (float) $price,
             ];
-            $itemsPrice += $price * $quantity;
-            if($price > 0)
-            {
+
+            if($price) {
                 $items[] = $li;
             }
         }
 
-        $itemsPrice = round($itemsPrice, 2);
-
         $grandTotal = round($orderAdapter->getGrandTotalAmount(), 2);
-
-        // Add shipping and taxes
-        $shipping = [
-            'name' => 'Shipping and taxes',
-            'quantity' => 1,
-            'amount_fiat' => round($grandTotal - $itemsPrice, 2),
-        ];
-
-        if($shipping['amount_fiat'] > 0)
-        {
-            $items[] = $shipping;
-        }
 
         $deal = array(
             'deal' => array(
-                'amount_fiat' => round($grandTotal, 2),
+                'amount_fiat' => $grandTotal,
                 'currency_fiat' => $orderAdapter->getCurrencyCode(),
                 'line_items' => $items
             ),
