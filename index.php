@@ -11,6 +11,7 @@ use Monetha\Services\GatewayService;
 use Monetha\Response\Exception\ApiException;
 use Monetha\Adapter\WebHookAdapterAbstract;
 use Monetha\Adapter\CallbackUrlInterface;
+use Monetha\Adapter\ReturnUrlUrlInterface;
 use Monetha\Response\Exception\ValidationException;
 
 class Client implements ClientAdapterInterface {
@@ -206,8 +207,6 @@ $config = new Config(
     $testMode
 );
 
-Monetha
-
 $gateway = new GatewayService($config);
 
 try {
@@ -284,6 +283,19 @@ class OrderSupportsWebHooks extends Order implements CallbackUrlInterface {
     public function getCallbackUrl()
     {
         return $this->getBaseUrl() . '/monetha/webhooks';
+    }
+}
+
+// It's Mandatory to implement Monetha\Adapter\ReturnUrlUrlInterface in case you have confirmation page
+class OrderHasConfirmationPage extends Order implements ReturnUrlUrlInterface {
+    /**
+     * Monetha Gateway will show a link to that URL after payment succeeded.
+     *
+     * @return string
+     */
+    public function getReturnUrl()
+    {
+        return $this->getBaseUrl() . '/order_confirmed';
     }
 }
 

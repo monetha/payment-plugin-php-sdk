@@ -10,10 +10,13 @@ namespace Monetha\Payload;
 
 
 use Monetha\Adapter\CallbackUrlInterface;
+use Monetha\Adapter\ReturnUrlUrlInterface;
 use Monetha\Adapter\OrderAdapterInterface;
 
 class CreateOffer extends AbstractPayload
 {
+    const LINE_ITEMS_PRECISION = 6;
+
     /**
      * CreateOffer constructor.
      * @param OrderAdapterInterface $orderAdapter
@@ -39,12 +42,12 @@ class CreateOffer extends AbstractPayload
         $cartItems = $orderAdapter->getItems();
 
         foreach ($cartItems as $item) {
-            $price = round($item->getPrice(), 2);
-            $quantity = $item->getQtyOrdered();
+            $price = round((float) $item->getPrice(), self::LINE_ITEMS_PRECISION);
+            $quantity = (int) $item->getQtyOrdered();
             $li = [
                 'name' => $item->getName(),
-                'quantity' => (int) $quantity,
-                'amount_fiat' => (float) $price,
+                'quantity' => $quantity,
+                'amount_fiat' => $price,
             ];
 
             if($price) {
@@ -66,6 +69,10 @@ class CreateOffer extends AbstractPayload
 
         if ($orderAdapter instanceof CallbackUrlInterface) {
             $deal['callback_url'] = $orderAdapter->getCallbackUrl();
+        }
+
+        if ($orderAdapter instanceof ReturnUrlUrlInterface) {
+            $deal['return_url'] = $orderAdapter->getReturnUrl();
         }
 
         return $deal;
