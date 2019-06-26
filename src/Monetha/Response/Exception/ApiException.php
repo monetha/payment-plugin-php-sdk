@@ -23,6 +23,7 @@ class ApiException extends \Exception
         'AMOUNT_TOO_SMALL' => 'Amount_fiat in body should be greater than or equal to 0.01',
         'PROCESSOR_MISSING' => 'Can\'t process order, please contact merchant.',
         'UNSUPPORTED_CURRENCY' => 'Selected currency is not supported by Monetha.',
+        'INVALID_TOTAL_AMOUNT' => 'Total amount of line items should be equal to deal amount.',
     ];
 
     /**
